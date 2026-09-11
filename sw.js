@@ -2,9 +2,10 @@
    The app is one HTML file with everything inlined, so caching the shell
    makes it work with no network at all. Bump CACHE on every deploy or
    people keep the old build forever. */
-var CACHE = "formfuel-v2";
+var CACHE = "formfuel-v7";
 var SHELL = ["./", "./index.html", "./manifest.json",
-             "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
+             "./icon-180.png", "./icon-192.png", "./icon-512.png",
+             "./icon-512-maskable.png", "./favicon.ico"];
 
 self.addEventListener("install", function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(SHELL); })
