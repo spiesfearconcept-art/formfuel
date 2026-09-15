@@ -5605,239 +5605,7 @@ var LEVELS = [
   },
 ];
 
-var ATTACKS = [
-  {
-    id:"meal",icon:"⚔️",name:"Meal Strike",
-    desc:"Deal damage for each meal completed today",
-    baseDmg:80,bonusDmg:30,color:"#C4523A",
-    xp:60,cooldown:0,maxUses:3,uses:0,
-    effect:"slash",
-  },
-  {
-    id:"workout",icon:"💪",name:"Iron Assault",
-    desc:"Your workout fuels a devastating power strike",
-    baseDmg:150,bonusDmg:60,color:"#FF6040",
-    xp:120,cooldown:0,maxUses:1,uses:0,
-    effect:"crush",
-  },
-  {
-    id:"water",icon:"💧",name:"Hydro Surge",
-    desc:"Full hydration unleashes a wave of force",
-    baseDmg:60,bonusDmg:20,color:"#4A8FE8",
-    xp:40,cooldown:0,maxUses:2,uses:0,
-    effect:"wave",
-  },
-  {
-    id:"streak",icon:"🔥",name:"Streak Inferno",
-    desc:"Your 3-day streak erupts into a fire combo",
-    baseDmg:200,bonusDmg:80,color:"#F59E0B",
-    xp:180,cooldown:0,maxUses:1,uses:0,
-    effect:"inferno",
-  },
-];
 
-var SPELLS = [
-  {
-    id:"protein",
-    name:"Spell of Strength",
-    macro:"Protein",
-    tagline:"The builder. The repairer. The foundation of every muscle fiber in your body.",
-    color:"#C4523A",
-    colorRGB:"196,82,58",
-    level:"ESSENTIAL",
-    pills:["4 cal/g","Muscle","Recovery","Satiety"],
-    rune:`<svg viewBox="0 0 52 52" fill="none">
-      <defs><radialGradient id="pg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FF9070"/><stop offset="100%" stop-color="#5C1A0A"/></radialGradient></defs>
-      <circle cx="26" cy="26" r="24" stroke="#C4523A" stroke-width="1" stroke-opacity=".6" fill="url(#pg)" fill-opacity=".12"/>
-      <circle cx="26" cy="26" r="21" stroke="#FF9070" stroke-width=".5" stroke-opacity=".3" stroke-dasharray="3 5" fill="none" style="animation:emblemRotate 8s linear infinite;transform-origin:26px 26px;"/>
-      <polygon points="26,2 28,6 24,6" fill="#C4523A" opacity=".9"/>
-      <polygon points="26,50 28,46 24,46" fill="#C4523A" opacity=".9"/>
-      <polygon points="2,26 6,24 6,28" fill="#C4523A" opacity=".9"/>
-      <polygon points="50,26 46,24 46,28" fill="#C4523A" opacity=".9"/>
-      <circle cx="26" cy="26" r="13" fill="#C4523A" fill-opacity=".07" stroke="#C4523A" stroke-width=".7" stroke-opacity=".4"/>
-      <!-- muscle/strength rune -->
-      <path d="M18 32 L18 20 L26 14 L34 20 L34 32" stroke="#FF9070" stroke-width="2" stroke-linecap="square" fill="none"/>
-      <path d="M20 26 L32 26" stroke="#FF9070" stroke-width="1.5" stroke-linecap="square"/>
-      <path d="M22 32 L30 32" stroke="#C4523A" stroke-width="1.5" stroke-linecap="square"/>
-    </svg>`,
-    stats:[{label:"Muscle Build",val:95,pct:95},{label:"Fat Loss Aid",val:78,pct:78},{label:"Satiety",val:90,pct:90},{label:"Energy",val:40,pct:40}],
-    what:`<strong>Protein</strong> is the raw material your body uses to build and repair muscle tissue. Every time you work out, you create microscopic tears in your muscle fibers. Protein is what patches those tears and makes them grow back <strong>stronger and bigger</strong>. Without enough protein, your body cannot recover — and your muscles shrink instead of grow. It also keeps you full longer than carbs or fat, which makes fat loss dramatically easier.`,
-    powers:[
-      {icon:"💪",text:"Builds and repairs muscle tissue after training — without it, workouts do nothing"},
-      {icon:"🔥",text:"Boosts metabolism by up to 30% through the thermic effect of food — your body burns more calories digesting protein than any other macro"},
-      {icon:"🛡️",text:"Preserves muscle mass during a calorie deficit so you lose fat, not muscle"},
-      {icon:"😤",text:"Keeps you full for hours by suppressing hunger hormones like ghrelin"},
-    ],
-    foods:[
-      {icon:"🍗",name:"Chicken Breast"},{icon:"🥚",name:"Eggs"},{icon:"🐟",name:"Salmon"},
-      {icon:"🥩",name:"Lean Beef"},{icon:"🫘",name:"Lentils"},{icon:"🧀",name:"Greek Yogurt"},
-      {icon:"🌿",name:"Tofu"},{icon:"🥛",name:"Cottage Cheese"},
-    ],
-    target:"0.7–1g per pound of bodyweight daily. If you weigh 180 lbs, aim for 126–180g of protein every day.",
-    targetIcon:"⚖️",
-    warning:"Most people eat half the protein they need. Under-eating protein is the #1 reason people don't see results from training.",
-  },
-  {
-    id:"carbs",
-    name:"Spell of Fuel",
-    macro:"Carbohydrates",
-    tagline:"The primary energy source. Your brain, muscles, and every cell run on this.",
-    color:"#F59E0B",
-    colorRGB:"245,158,11",
-    level:"PRIMARY FUEL",
-    pills:["4 cal/g","Energy","Brain","Performance"],
-    rune:`<svg viewBox="0 0 52 52" fill="none">
-      <defs><radialGradient id="cg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="100%" stop-color="#5C3500"/></radialGradient></defs>
-      <circle cx="26" cy="26" r="24" stroke="#F59E0B" stroke-width="1" stroke-opacity=".6" fill="url(#cg)" fill-opacity=".1"/>
-      <circle cx="26" cy="26" r="21" stroke="#FDE68A" stroke-width=".5" stroke-opacity=".3" stroke-dasharray="4 4" fill="none" style="animation:emblemRotate 6s linear infinite reverse;transform-origin:26px 26px;"/>
-      <polygon points="26,2 28,6 24,6" fill="#F59E0B" opacity=".9"/>
-      <polygon points="26,50 28,46 24,46" fill="#F59E0B" opacity=".9"/>
-      <polygon points="2,26 6,24 6,28" fill="#F59E0B" opacity=".9"/>
-      <polygon points="50,26 46,24 46,28" fill="#F59E0B" opacity=".9"/>
-      <circle cx="26" cy="26" r="13" fill="#F59E0B" fill-opacity=".06" stroke="#F59E0B" stroke-width=".7" stroke-opacity=".4"/>
-      <!-- lightning bolt / energy rune -->
-      <path d="M30 13 L22 26 L27 26 L22 39 L34 24 L28 24 Z" fill="#FDE68A" stroke="#F59E0B" stroke-width=".5" opacity=".9"/>
-    </svg>`,
-    stats:[{label:"Energy",val:95,pct:95},{label:"Brain Power",val:90,pct:90},{label:"Performance",val:88,pct:88},{label:"Fat Loss",val:35,pct:35}],
-    what:`<strong>Carbohydrates</strong> are your body's preferred fuel source — they convert to glucose, which powers every cell from your muscles to your brain. Your brain alone consumes about 120g of glucose per day just to function. Complex carbs from whole foods digest slowly, giving you <strong>sustained energy without crashes</strong>. Simple carbs digest fast — useful right before or after training, harmful when eaten mindlessly all day.`,
-    powers:[
-      {icon:"⚡",text:"Powers high-intensity exercise — without carbs, heavy lifting and sprinting feel impossible"},
-      {icon:"🧠",text:"Fuels your brain — low carb diets cause brain fog, poor decisions, and mood crashes"},
-      {icon:"💾",text:"Stored as glycogen in your muscles — full glycogen = better pumps, strength, and endurance"},
-      {icon:"🛡️",text:"Spares protein — when carbs are available, your body uses them for energy instead of breaking down muscle"},
-    ],
-    foods:[
-      {icon:"🌾",name:"Oats"},{icon:"🍠",name:"Sweet Potato"},{icon:"🍚",name:"Brown Rice"},
-      {icon:"🫐",name:"Berries"},{icon:"🍌",name:"Banana"},{icon:"🍞",name:"Whole Grain Bread"},
-      {icon:"🫘",name:"Chickpeas"},{icon:"🥦",name:"Vegetables"},
-    ],
-    target:"40–60% of daily calories. On a 2000 calorie diet that's 200–300g per day. Prioritize complex carbs 80% of the time.",
-    targetIcon:"⚡",
-    warning:"Cutting carbs completely tanks your performance in the gym and your mental sharpness. Very low carb diets work for some — but most people feel and perform better with adequate carbohydrates.",
-  },
-  {
-    id:"fats",
-    name:"Spell of Protection",
-    macro:"Dietary Fats",
-    tagline:"The misunderstood macro. Fat doesn't make you fat — it protects your brain, hormones, and cells.",
-    color:"#2DD4BF",
-    colorRGB:"45,212,191",
-    level:"VITAL",
-    pills:["9 cal/g","Hormones","Brain","Joints"],
-    rune:`<svg viewBox="0 0 52 52" fill="none">
-      <defs><radialGradient id="fg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#99F6E4"/><stop offset="100%" stop-color="#0D4A44"/></radialGradient></defs>
-      <circle cx="26" cy="26" r="24" stroke="#2DD4BF" stroke-width="1" stroke-opacity=".6" fill="url(#fg)" fill-opacity=".1"/>
-      <circle cx="26" cy="26" r="21" stroke="#99F6E4" stroke-width=".5" stroke-opacity=".3" stroke-dasharray="5 3" fill="none" style="animation:emblemRotate 9s linear infinite;transform-origin:26px 26px;"/>
-      <polygon points="26,2 28,6 24,6" fill="#2DD4BF" opacity=".9"/>
-      <polygon points="26,50 28,46 24,46" fill="#2DD4BF" opacity=".9"/>
-      <polygon points="2,26 6,24 6,28" fill="#2DD4BF" opacity=".9"/>
-      <polygon points="50,26 46,24 46,28" fill="#2DD4BF" opacity=".9"/>
-      <circle cx="26" cy="26" r="13" fill="#2DD4BF" fill-opacity=".06" stroke="#2DD4BF" stroke-width=".7" stroke-opacity=".4"/>
-      <!-- shield / protection rune -->
-      <path d="M26 13 L38 19 L38 29 L26 39 L14 29 L14 19 Z" stroke="#99F6E4" stroke-width="1.5" fill="none" stroke-linejoin="miter"/>
-      <path d="M26 17 L34 21 L34 28 L26 35 L18 28 L18 21 Z" stroke="#2DD4BF" stroke-width=".8" fill="#2DD4BF" fill-opacity=".08" stroke-linejoin="miter"/>
-      <circle cx="26" cy="26" r="2.5" fill="#99F6E4" opacity=".8"/>
-    </svg>`,
-    stats:[{label:"Hormone Health",val:95,pct:95},{label:"Brain Function",val:88,pct:88},{label:"Joint Health",val:82,pct:82},{label:"Energy (slow)",val:70,pct:70}],
-    what:`<strong>Dietary fat</strong> is essential — your body cannot produce certain fatty acids on its own and must get them from food. Fat is the building block of every cell membrane in your body. It produces your sex hormones like testosterone and estrogen. It protects your organs. It makes fat-soluble vitamins (A, D, E, K) absorbable. <strong>Eating fat does not make you fat</strong> — eating too many total calories does. The type of fat matters enormously.`,
-    powers:[
-      {icon:"🧠",text:"60% of your brain is made of fat — DHA omega-3 specifically is critical for memory, focus, and mental health"},
-      {icon:"flask",text:"Produces testosterone, estrogen, and cortisol — without fat your hormones crash and muscle gain stops"},
-      {icon:"🛡️",text:"Surrounds and cushions your organs from physical impact"},
-      {icon:"💊",text:"Required for absorption of vitamins A, D, E, and K — without fat these vitamins pass right through you"},
-    ],
-    foods:[
-      {icon:"🥑",name:"Avocado"},{icon:"🐟",name:"Salmon"},{icon:"🫒",name:"Olive Oil"},
-      {icon:"🥜",name:"Almonds"},{icon:"🧀",name:"Cheese"},{icon:"🥚",name:"Egg Yolks"},
-      {icon:"🥥",name:"Coconut"},{icon:"🌰",name:"Walnuts"},
-    ],
-    target:"20–35% of daily calories. On 2000 calories that's 44–78g per day. Prioritize unsaturated fats — minimize trans fats completely.",
-    targetIcon:"🛡️",
-    warning:"Very low fat diets (under 15% of calories) cause hormonal disruption, joint pain, and vitamin deficiencies. Fat is not the enemy — refined sugar and processed food are.",
-  },
-  {
-    id:"fiber",
-    name:"Spell of Cleansing",
-    macro:"Dietary Fiber",
-    tagline:"The forgotten macro. Controls hunger, gut health, blood sugar, and longevity.",
-    color:"#4CAF72",
-    colorRGB:"76,175,114",
-    level:"CRITICAL",
-    pills:["~2 cal/g","Gut Health","Blood Sugar","Longevity"],
-    rune:`<svg viewBox="0 0 52 52" fill="none">
-      <defs><radialGradient id="fibg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#88E8A8"/><stop offset="100%" stop-color="#0D4025"/></radialGradient></defs>
-      <circle cx="26" cy="26" r="24" stroke="#4CAF72" stroke-width="1" stroke-opacity=".6" fill="url(#fibg)" fill-opacity=".1"/>
-      <circle cx="26" cy="26" r="21" stroke="#88E8A8" stroke-width=".5" stroke-opacity=".3" stroke-dasharray="3 6" fill="none" style="animation:emblemRotate 11s linear infinite reverse;transform-origin:26px 26px;"/>
-      <polygon points="26,2 28,6 24,6" fill="#4CAF72" opacity=".9"/>
-      <polygon points="26,50 28,46 24,46" fill="#4CAF72" opacity=".9"/>
-      <polygon points="2,26 6,24 6,28" fill="#4CAF72" opacity=".9"/>
-      <polygon points="50,26 46,24 46,28" fill="#4CAF72" opacity=".9"/>
-      <circle cx="26" cy="26" r="13" fill="#4CAF72" fill-opacity=".06" stroke="#4CAF72" stroke-width=".7" stroke-opacity=".4"/>
-      <!-- spiral / cleansing rune -->
-      <path d="M26 16 C32 16 36 20 36 26 C36 32 32 36 26 36 C20 36 16 32 16 26 C16 21 19 17 23 16" stroke="#88E8A8" stroke-width="1.5" fill="none" stroke-linecap="square"/>
-      <path d="M23 16 L26 13 L26 19" stroke="#88E8A8" stroke-width="1.2" stroke-linecap="square" fill="none"/>
-      <circle cx="26" cy="26" r="3" fill="#4CAF72" opacity=".7"/>
-    </svg>`,
-    stats:[{label:"Gut Health",val:95,pct:95},{label:"Blood Sugar",val:88,pct:88},{label:"Hunger Control",val:85,pct:85},{label:"Longevity",val:90,pct:90}],
-    what:`<strong>Fiber</strong> is a carbohydrate your body cannot digest — and that's exactly the point. It passes through your gut feeding the trillions of bacteria that make up your microbiome. A healthy microbiome controls everything from immune function to mood to inflammation. Soluble fiber dissolves in water and slows digestion, keeping blood sugar stable. Insoluble fiber adds bulk and keeps your digestive system moving. Most people get <strong>half the fiber they need</strong> daily.`,
-    powers:[
-      {icon:"🦠",text:"Feeds beneficial gut bacteria that control immunity, inflammation, and even mental health"},
-      {icon:"📉",text:"Slows sugar absorption — prevents blood sugar spikes and crashes that cause energy dips and fat storage"},
-      {icon:"🪣",text:"Creates fullness physically — expands in your stomach and slows gastric emptying"},
-      {icon:"❤️",text:"Reduces LDL cholesterol and risk of heart disease, type 2 diabetes, and colon cancer"},
-    ],
-    foods:[
-      {icon:"🫘",name:"Black Beans"},{icon:"🥦",name:"Broccoli"},{icon:"🌾",name:"Oats"},
-      {icon:"🫐",name:"Berries"},{icon:"🥕",name:"Carrots"},{icon:"🍎",name:"Apples"},
-      {icon:"🌰",name:"Flaxseed"},{icon:"🥬",name:"Leafy Greens"},
-    ],
-    target:"25–38g per day. Most adults get only 10–15g. Add fiber gradually — too much too fast causes bloating.",
-    targetIcon:"🌿",
-    warning:"Increasing fiber without increasing water intake causes constipation and bloating. Always drink more water when eating more fiber.",
-  },
-  {
-    id:"water",
-    name:"Spell of Life",
-    macro:"Hydration",
-    tagline:"The most overlooked performance enhancer. Every single bodily process depends on water.",
-    color:"#4A8FE8",
-    colorRGB:"74,143,232",
-    level:"FOUNDATIONAL",
-    pills:["0 cal","Performance","Recovery","Cognition"],
-    rune:`<svg viewBox="0 0 52 52" fill="none">
-      <defs>
-        <radialGradient id="wg2" cx="40%" cy="30%" r="60%"><stop offset="0%" stop-color="#C8E8FF"/><stop offset="100%" stop-color="#1E5FA8"/></radialGradient>
-        <radialGradient id="wring" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#90C0FF" stop-opacity=".9"/><stop offset="100%" stop-color="#0A2A60" stop-opacity=".6"/></radialGradient>
-      </defs>
-      <circle cx="26" cy="26" r="24" stroke="#4A8FE8" stroke-width="1" stroke-opacity=".6" fill="url(#wring)" fill-opacity=".1"/>
-      <circle cx="26" cy="26" r="21" stroke="#90C0FF" stroke-width=".5" stroke-opacity=".3" stroke-dasharray="4 4" fill="none" style="animation:emblemRotate 7s linear infinite;transform-origin:26px 26px;"/>
-      <polygon points="26,2 28,6 24,6" fill="#4A8FE8" opacity=".9"/>
-      <polygon points="26,50 28,46 24,46" fill="#4A8FE8" opacity=".9"/>
-      <polygon points="2,26 6,24 6,28" fill="#4A8FE8" opacity=".9"/>
-      <polygon points="50,26 46,24 46,28" fill="#4A8FE8" opacity=".9"/>
-      <circle cx="26" cy="26" r="13" fill="#4A8FE8" fill-opacity=".06" stroke="#4A8FE8" stroke-width=".7" stroke-opacity=".4"/>
-      <!-- water drop -->
-      <path d="M26 13 C26 13 18 21 18 27 C18 31.4 21.6 35 26 35 C30.4 35 34 31.4 34 27 C34 21 26 13 26 13Z" fill="url(#wg2)" opacity=".9"/>
-      <ellipse cx="23" cy="25" rx="2" ry="3.5" fill="white" opacity=".25" transform="rotate(-15 23 25)"/>
-    </svg>`,
-    stats:[{label:"Performance",val:95,pct:95},{label:"Recovery",val:90,pct:90},{label:"Cognition",val:88,pct:88},{label:"Digestion",val:85,pct:85}],
-    what:`<strong>Water</strong> makes up 60% of your body weight and is involved in every single biological process — digestion, circulation, temperature regulation, joint lubrication, nutrient transport, and waste removal. Even mild dehydration of <strong>just 2% body weight</strong> reduces physical performance by up to 20% and cognitive function noticeably. It has no calories, no downside, and is the single cheapest performance enhancer that exists.`,
-    powers:[
-      {icon:"💪",text:"Muscle cells are 75% water — dehydrated muscles are weaker, cramp faster, and recover slower"},
-      {icon:"🧠",text:"Brain tissue is 73% water — even slight dehydration causes brain fog, poor memory, and headaches"},
-      {icon:"🔥",text:"Drinking cold water slightly boosts metabolism as your body warms it to body temperature"},
-      {icon:"🫀",text:"Keeps blood volume optimal so oxygen and nutrients reach muscles efficiently during training"},
-    ],
-    foods:[
-      {icon:"💧",name:"Plain Water"},{icon:"🍵",name:"Herbal Tea"},{icon:"🍉",name:"Watermelon"},
-      {icon:"🥒",name:"Cucumber"},{icon:"🍓",name:"Strawberries"},{icon:"🥬",name:"Lettuce"},
-      {icon:"🫙",name:"Electrolytes"},{icon:"🥛",name:"Milk"},
-    ],
-    target:"Half your bodyweight in ounces daily. 180 lbs = 90oz = ~11 glasses. Add 16oz for every hour of exercise.",
-    targetIcon:"💧",
-    warning:"Thirst is a late signal — by the time you feel thirsty you are already mildly dehydrated. Drink consistently throughout the day rather than gulping large amounts at once.",
-  },
-];
 
 var FOOD_DB = {
   "016000275027":{name:"Cheerios",brand:"General Mills",emoji:"🥣",serving:"1 cup (28g)",
@@ -5878,24 +5646,6 @@ var FOOD_DB = {
     flags:[{type:"bad",label:"Fried in seed oil"},{type:"bad",label:"Low protein"}]},
 };
 
-var BATTLE_VERSES = {
-  preBattle:[
-    {verse:"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.",ref:"Joshua 1:9"},
-    {verse:"For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.",ref:"2 Timothy 1:7"},
-    {verse:"I can do all things through Christ who strengthens me.",ref:"Philippians 4:13"},
-    {verse:"Be strong in the Lord and in his mighty power.",ref:"Ephesians 6:10"},
-  ],
-  victory:[
-    {verse:"Thanks be to God! He gives us the victory through our Lord Jesus Christ.",ref:"1 Corinthians 15:57"},
-    {verse:"No, in all these things we are more than conquerors through him who loved us.",ref:"Romans 8:37"},
-    {verse:"The Lord is my strength and my shield; my heart trusts in him, and he helps me.",ref:"Psalm 28:7"},
-  ],
-  defeat:[
-    {verse:"Consider it pure joy whenever you face trials, because the testing of your faith produces perseverance.",ref:"James 1:2-3"},
-    {verse:"No discipline seems pleasant at the time, but painful. Later on, however, it produces a harvest of righteousness.",ref:"Hebrews 12:11"},
-    {verse:"Those who hope in the Lord will renew their strength. They will run and not grow weary.",ref:"Isaiah 40:31"},
-  ],
-};
 
 var VERSES=[
   {verse:"I can do all things through Christ who strengthens me.",ref:"Philippians 4:13"},
@@ -5907,31 +5657,8 @@ var VERSES=[
   {verse:"I praise you because I am fearfully and wonderfully made; your works are wonderful.",ref:"Psalm 139:14"},
 ];
 
-var MEMBERS = [
-  {id:1,name:"IRON RECRUIT",emoji:"⚔️",cls:"The Warrior · Mesomorph",you:true,level:1,tier:"EPIC",color:"#C4523A",colorRGB:"196,82,58",xpPct:50,streak:3,dmg:820,you:true},
-  {id:2,name:"SHADOW BLADE",emoji:"🗡️",cls:"The Assassin · Ecto-Meso",level:4,tier:"LEGENDARY",color:"#B8924A",colorRGB:"184,146,74",xpPct:78,streak:7,dmg:1240,you:false},
-  {id:3,name:"STORM KNIGHT",emoji:"⚡",cls:"The Warrior · Mesomorph",level:3,tier:"RARE",color:"#4A8FE8",colorRGB:"74,143,232",xpPct:35,streak:2,dmg:680,you:false},
-  {id:4,name:"FOREST GUARDIAN",emoji:"🌿",cls:"The Ranger · Ectomorph",level:2,tier:"UNCOMMON",color:"#4CAF72",colorRGB:"76,175,114",xpPct:62,streak:5,dmg:420,you:false},
-  {id:5,name:"VOID STALKER",emoji:"💜",cls:"The Assassin · Ecto-Meso",level:5,tier:"LEGENDARY",color:"#B8924A",colorRGB:"184,146,74",xpPct:88,streak:12,dmg:1560,you:false},
-  {id:6,name:"IRON TITAN",emoji:"🛡️",cls:"The Guardian · Endomorph",level:2,tier:"EPIC",color:"#A855F7",colorRGB:"168,85,247",xpPct:44,streak:4,dmg:520,you:false},
-];
 
-var QUESTS = [
-  {name:"Full House",desc:"All 6 guild members complete their meals today",icon:"🍽️",color:"#C4523A",colorRGB:"196,82,58",prog:4,total:6,reward:"+500 Guild XP · +100 Personal XP",done:false},
-  {name:"Hydration Army",desc:"Every member drinks 8 glasses of water today",icon:"💧",color:"#4A8FE8",colorRGB:"74,143,232",prog:3,total:6,reward:"+300 Guild XP · +50 Personal XP",done:false},
-  {name:"Boss Slayers",desc:"Deal 2,000+ damage to the party boss this week",icon:"💀",color:"#FF3D6B",colorRGB:"255,61,107",prog:1756,total:2000,reward:"+1000 Guild XP · Rare Loot",done:false},
-  {name:"Iron Discipline",desc:"Full guild maintains 7-day streak",icon:"🔥",color:"#F59E0B",colorRGB:"245,158,11",prog:2,total:6,reward:"+800 Guild XP · Streak Armor",done:false},
-  {name:"Macro Masters",desc:"5 members hit protein target 3 days in a row",icon:"⚗️",color:"#4CAF72",colorRGB:"76,175,114",prog:5,total:5,reward:"+600 Guild XP · Spell Unlock",done:true},
-];
 
-var CHAT_INIT = [
-  {sender:"SYSTEM",text:"⚔️ Iron Covenant was forged. The battle begins.",time:"MON 06:00",system:true},
-  {sender:"VOID STALKER",emoji:"💜",color:"#B8924A",text:"Let's crush this week. No excuses.",time:"MON 08:14"},
-  {sender:"SHADOW BLADE",emoji:"🗡️",color:"#B8924A",text:"Already hit 140g protein. Who's with me?",time:"MON 09:32"},
-  {sender:"FOREST GUARDIAN",emoji:"🌿",color:"#4CAF72",text:"Smashed my workout and all 5 meals done. The verse today hit different 🙏",time:"MON 12:05"},
-  {sender:"STORM KNIGHT",emoji:"⚡",color:"#4A8FE8",text:"Isaiah 40:31 never gets old. Run and not grow weary 💪",time:"MON 12:18"},
-  {sender:"IRON TITAN",emoji:"🛡️",color:"#A855F7",text:"Boss is at 71% HP. We need to push harder today.",time:"MON 15:44"},
-];
 
 var COOKING_OPTIONS = [
   {id:"simple",name:"Keep it Simple",desc:"Minimal prep — mostly ready-made or basic assembly"},
@@ -6097,10 +5824,7 @@ var stream = null;
 var musicPlaying = false;
 var bossHp = null;
 var firstAttack = false;
-var verseIndex = 0;
-var currentResult = null;
 var scanXP = 0;
-var _timerInterval = null;
 var openSpell = null;
 var chatMessages = [];
 var S = {};  // onboarding state
@@ -6771,14 +6495,6 @@ function buildOptionGrid(containerId, stateKey, options, colorFn){
       ${o.badge?`<div class="option-badge" style="background:${o.badgeColor}18;color:${o.badgeColor};border:1px solid ${o.badgeColor}33;">${o.badge}</div>`:""}
     </div>`).join("");
 }
-function buildScreen1(){
-  // Allergens
-  document.getElementById("allergenChips").innerHTML = ALLERGENS.map(a=>`
-    <div class="chip" id="alg-${a}" onclick="toggleAllergen('${a}')">${a}</div>`).join("");
-  // Diet
-  document.getElementById("dietChips").innerHTML = DIET_STYLES.map(d=>`
-    <div class="chip diet ${d.id===S.dietStyle?"active":""}" id="diet-${d.id}" onclick="pickDiet('${d.id}')">${d.label}</div>`).join("");
-}
 function getSwapText(meal, allergens) {
     var swaps = [];
     allergens.forEach(function(allergen) {
@@ -7059,15 +6775,6 @@ function toggleDashMeal(i){
   var cnt = document.getElementById("meals-count");
   if(cnt) cnt.textContent=`${mealsComplete} / ${(FF.mealsToday||[]).length} complete`;
 }
-function getDailyTotals(){
-  return dailyLog.reduce((acc,item)=>({
-    calories:acc.calories+(item.calories||0),
-    protein:acc.protein+(item.protein||0),
-    carbs:acc.carbs+(item.carbs||0),
-    fat:acc.fat+(item.fat||0),
-    fiber:acc.fiber+(item.fiber||0),
-  }),{calories:0,protein:0,carbs:0,fat:0,fiber:0});
-}
 
 function fillDashDrop(i){
   var prev = FF.waterToday;
@@ -7101,191 +6808,10 @@ var DROP_STATE = {};  // keyed by drop index
 
 // The drop shape as a normalized path (0-1 space mapped to canvas)
 // We clip the canvas to this shape using Path2D
-function dropPath2D(w, h){
-  // Matches the SVG path exactly:
-  // M13 1 C13 1 1 14 1 22 C1 29.2 6.5 35 13 35 C19.5 35 25 29.2 25 22 C25 14 13 1 13 1Z
-  // Scaled from 26x36 viewBox to canvas w x h
-  var sx = w/26, sy = h/36;
-  var p = new Path2D();
-  p.moveTo(13*sx, 1*sy);
-  p.bezierCurveTo(13*sx, 1*sy, 1*sx, 14*sy, 1*sx, 22*sy);
-  p.bezierCurveTo(1*sx, 29.2*sy, 6.5*sx, 35*sy, 13*sx, 35*sy);
-  p.bezierCurveTo(19.5*sx, 35*sy, 25*sx, 29.2*sy, 25*sx, 22*sy);
-  p.bezierCurveTo(25*sx, 14*sy, 13*sx, 1*sy, 13*sx, 1*sy);
-  p.closePath();
-  return p;
-}
 
-function startDropPour(idx){
-  var cvs = document.getElementById(`drop-canvas-${idx}`);
-  if(!cvs) return;
-  var ctx = cvs.getContext('2d');
-  var W = cvs.width, H = cvs.height;
-  var clip = dropPath2D(W, H);
 
-  // Cancel any running animation
-  if(DROP_STATE[idx] && DROP_STATE[idx].raf) cancelAnimationFrame(DROP_STATE[idx].raf);
-
-  const state = {
-    phase: 'pour',      // 'pour' | 'slosh'
-    fillY: 0,           // current water top Y (0=top, H=bottom of canvas)
-    targetY: H * 0.28,  // where water settles (72% filled)
-    pourSpeed: 0.6,     // px per frame during pour
-    waveOffset: 0,
-    waveAmp: 3.5,
-    waveFreq: 0.35,
-    waveSpeed: 0.055,
-    shimmerT: 0,
-    raf: null,
-    alive: true,
-  };
-  DROP_STATE[idx] = state;
-
-  // Start from top (pour begins at top of drop)
-  state.fillY = 0;
-
-  // Ripple burst on the drop wrapper
-  var drop = document.getElementById(`drop-${idx}`);
-  if(drop){
-    drop.style.transition = "none";
-    drop.style.transform  = "scaleY(0.6) scaleX(1.18)";
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      drop.style.transition = "transform .38s cubic-bezier(.34,1.8,.64,1)";
-      drop.style.transform  = "scale(1)";
-    }));
-  }
-
-  function draw(){
-    if(!state.alive) return;
-    ctx.clearRect(0, 0, W, H);
-
-    // ── Draw empty shell ──
-    ctx.save();
-    ctx.clip(clip);
-    ctx.fillStyle = "rgba(74,143,232,0.07)";
-    ctx.fill(clip);
-    ctx.restore();
-
-    // ── Draw water fill ──
-    ctx.save();
-    ctx.clip(clip);
-
-    const wy = state.fillY;  // water top Y
-
-    // Base water body
-    ctx.fillStyle = "rgba(55,130,220,0.72)";
-    ctx.fillRect(0, wy, W, H - wy);
-
-    // Wave on top of water
-    ctx.beginPath();
-    ctx.moveTo(0, wy);
-    const wSteps = 40;
-    for(let x=0;x<=W;x+=(W/wSteps)){
-      const amp = state.phase === 'pour'
-        ? state.waveAmp * ((H - state.fillY) / H) * 0.6
-        : state.waveAmp;
-      const y = wy + Math.sin(x * state.waveFreq + state.waveOffset) * amp;
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(W, H);
-    ctx.lineTo(0, H);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(74,143,232,0.82)";
-    ctx.fill();
-
-    // Second wave — slightly lighter, offset phase
-    ctx.beginPath();
-    ctx.moveTo(0, wy);
-    for(let x=0;x<=W;x+=(W/wSteps)){
-      const amp2 = state.phase === 'pour' ? 1.5 : 2.2;
-      const y = wy + Math.sin(x * state.waveFreq * 1.4 + state.waveOffset * 1.3 + 1.8) * amp2;
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(W, H);
-    ctx.lineTo(0, H);
-    ctx.closePath();
-    ctx.fillStyle = "rgba(140,200,255,0.28)";
-    ctx.fill();
-
-    // Shimmer highlight
-    state.shimmerT += 0.035;
-    const shX = W*0.28 + Math.sin(state.shimmerT)*4;
-    const shY = wy + (H-wy)*0.25 + Math.cos(state.shimmerT*0.7)*3;
-    const shRad = ctx.createRadialGradient(shX,shY,0, shX,shY,7);
-    shRad.addColorStop(0,"rgba(255,255,255,0.28)");
-    shRad.addColorStop(1,"rgba(255,255,255,0)");
-    ctx.fillStyle = shRad;
-    ctx.beginPath();
-    ctx.ellipse(shX, shY, 7, 4, -0.4, 0, Math.PI*2);
-    ctx.fill();
-
-    ctx.restore();
-
-    // ── Draw outline ──
-    ctx.save();
-    ctx.strokeStyle = "rgba(74,143,232,0.75)";
-    ctx.lineWidth = 1;
-    ctx.stroke(clip);
-    ctx.restore();
-
-    // ── Advance state ──
-    state.waveOffset += state.waveSpeed;
-
-    if(state.phase === 'pour'){
-      state.fillY += state.pourSpeed;
-      if(state.fillY >= state.targetY){
-        state.fillY = state.targetY;
-        state.phase = 'slosh';
-        // Slow wave speed for settled water
-        state.waveSpeed = 0.038;
-        state.waveAmp   = 2.8;
-      }
-    } else {
-      // Gentle continuous slosh — amplitude breathes slowly
-      state.waveAmp = 2.4 + Math.sin(state.shimmerT * 0.4) * 0.8;
-    }
-
-    state.raf = requestAnimationFrame(draw);
-  }
-
-  draw();
-
-  // Update outline on the SVG shell too
-  var outline = document.getElementById(`drop-outline-${idx}`);
-  if(outline) outline.setAttribute("stroke","rgba(74,143,232,.75)");
-}
-
-function stopDropPour(idx){
-  if(DROP_STATE[idx]){
-    DROP_STATE[idx].alive = false;
-    if(DROP_STATE[idx].raf) cancelAnimationFrame(DROP_STATE[idx].raf);
-    delete DROP_STATE[idx];
-  }
-  // Clear canvas
-  var cvs = document.getElementById(`drop-canvas-${idx}`);
-  if(cvs){
-    const ctx = cvs.getContext('2d');
-    const W = cvs.width, H = cvs.height;
-    ctx.clearRect(0,0,W,H);
-    // Redraw empty shell
-    const clip = dropPath2D(W, H);
-    ctx.fillStyle = "rgba(74,143,232,0.07)";
-    ctx.fill(clip);
-    ctx.strokeStyle = "rgba(74,143,232,0.18)";
-    ctx.lineWidth = 1;
-    ctx.stroke(clip);
-  }
-  // Restore outline
-  var outline = document.getElementById(`drop-outline-${idx}`);
-  if(outline) outline.setAttribute("stroke","rgba(74,143,232,.18)");
-}
 
 // Restart animations for any already-filled drops (on page load from state)
-function initDropAnimations(){
-  for(let d=0;d<8;d++){
-    if(d < FF.waterToday) startDropPour(d);
-  }
-}
 
 
 
@@ -7470,11 +6996,6 @@ function stopDropPour(idx){
 }
 
 // Restart animations for any already-filled drops (on page load from state)
-function initDropAnimations(){
-  for(let d=0;d<8;d++){
-    if(d < FF.waterToday) startDropPour(d);
-  }
-}
 
 
 
@@ -8770,25 +8291,6 @@ function playWarnSound(){
 }
 
 // ── XP POPUP ──
-function showScanError(msg){
-  var existing = document.getElementById("scan-error-toast");
-  if(existing) existing.remove();
-  var el = document.createElement("div");
-  el.id = "scan-error-toast";
-  el.style.cssText = `
-    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
-    background:rgba(60,10,10,.96);border:1px solid rgba(196,82,58,.4);
-    border-radius:12px;padding:10px 20px;z-index:500;
-    font-family:var(--font-display);font-size:.72rem;letter-spacing:.06em;
-    color:#FF9070;white-space:nowrap;
-    animation:toastIn .35s cubic-bezier(.34,1.56,.64,1);
-    pointer-events:none;
-  `;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .3s"; },3000);
-  setTimeout(()=>el.remove(), 3400);
-}
 
 function showXPPopup(xp,x,y){
   var el=document.createElement("div");
@@ -8858,201 +8360,13 @@ function simulateScan(){
 }
 
 // ── MANUAL LOOKUP ──
-function lookupBarcode(code){
-  getAC();
-  if(!code){showScanError("Please enter a barcode number");return;}
-  var trimmed=code.toString().trim();
-  var food=FOOD_DB[trimmed];
-  if(food){
-    playScanSound();
-    showResult(food,trimmed);
-  } else {
-    // Try Open Food Facts API
-    document.getElementById("scanBadge").textContent="SEARCHING...";
-    fetch(`https://world.openfoodfacts.org/api/v0/product/${trimmed}.json`)
-      .then(r=>r.json())
-      .then(data=>{
-        if(data.status===1 && data.product){
-          const p=data.product;
-          const n=p.nutriments||{};
-          const food={
-            name:p.product_name||"Unknown Product",
-            brand:p.brands||"Unknown Brand",
-            emoji:"🛒",
-            serving:p.serving_size||"100g",
-            calories:Math.round(n["energy-kcal_serving"]||n["energy-kcal_100g"]||0),
-            protein:Math.round((n.proteins_serving||n.proteins_100g||0)*10)/10,
-            carbs:Math.round((n.carbohydrates_serving||n.carbohydrates_100g||0)*10)/10,
-            fat:Math.round((n.fat_serving||n.fat_100g||0)*10)/10,
-            fiber:Math.round((n.fiber_serving||n.fiber_100g||0)*10)/10,
-            sugar:Math.round((n.sugars_serving||n.sugars_100g||0)*10)/10,
-            sodium:Math.round(n.sodium_serving||n.sodium_100g||0),
-            allergens:[],
-            flags:generateFlags(
-              Math.round(n.proteins_serving||n.proteins_100g||0),
-              Math.round(n.sugars_serving||n.sugars_100g||0),
-              Math.round(n.fat_serving||n.fat_100g||0)
-            ),
-          };
-          playScanSound();
-          showResult(food,trimmed);
-        } else {
-          playWarnSound();
-          document.getElementById("scanBadge").textContent="NOT FOUND";
-          setTimeout(()=>document.getElementById("scanBadge").textContent="SCANNING",2000);
-          showScanError("Product not found — try another barcode");
-        }
-      })
-      .catch(()=>{
-        playWarnSound();
-        document.getElementById("scanBadge").textContent="ERROR";
-        setTimeout(()=>document.getElementById("scanBadge").textContent="SCANNING",2000);
-        showScanError("Could not reach database — check your connection");
-      });
-  }
-}
 
-function generateFlags(protein,sugar,fat){
-  var flags=[];
-  if(protein>=20) flags.push({type:"ok",label:"High protein"});
-  else if(protein>=10) flags.push({type:"ok",label:"Good protein"});
-  if(sugar>=15) flags.push({type:"bad",label:`${sugar}g sugar`});
-  else if(sugar>=8) flags.push({type:"warn",label:`${sugar}g sugar`});
-  if(fat<=3) flags.push({type:"ok",label:"Very low fat"});
-  return flags.length?flags:[{type:"ok",label:"Logged"}];
-}
 
 // ── SHOW RESULT ──
-function showResult(food, barcode){
-  // Ensure flags always exists — generate from macros if missing
-  if(!food.flags || !Array.isArray(food.flags)){
-    food = Object.assign({}, food, {
-      flags: (typeof generateFlags==="function")
-        ? generateFlags(food.protein||0, food.sugar||0, food.fat||0)
-        : []
-    });
-  }
-  currentResult={...food,barcode};
-  var section=document.getElementById("resultSection");
-  var card=document.getElementById("resultCard");
-  section.style.display="block";
-
-  // daily progress % this item adds
-  var dailyTotals=getDailyTotals();
-  var calPct=Math.min(Math.round((food.calories/(TARGETS.calories))*100),99);
-  var protPct=Math.min(Math.round((food.protein/(TARGETS.protein))*100),99);
-  var carbPct=Math.min(Math.round((food.carbs/(TARGETS.carbs))*100),99);
-  var fatPct=Math.min(Math.round((food.fat/(TARGETS.fat))*100),99);
-
-  var hasBad=food.flags.some(f=>f.type==="bad");
-
-  card.innerHTML=`
-    <div class="result-top">
-      <div class="result-icon" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;">${food.emoji}</div>
-      <div class="result-info">
-        <div class="result-name">${food.name}</div>
-        <div class="result-brand">${food.brand}</div>
-        <div class="result-serving">Per serving: ${food.serving}</div>
-      </div>
-    </div>
-
-    <div class="result-macros">
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#F59E0B;">${food.calories}</div>
-        <div class="result-macro-label">Calories</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#C4523A;">${food.protein}g</div>
-        <div class="result-macro-label">Protein</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#4A8FE8;">${food.carbs}g</div>
-        <div class="result-macro-label">Carbs</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#2DD4BF;">${food.fat}g</div>
-        <div class="result-macro-label">Fat</div>
-      </div>
-    </div>
-
-    <div class="result-progress">
-      ${[
-        {label:"Calories",pct:calPct,color:"#F59E0B",val:`${food.calories} kcal`},
-        {label:"Protein",pct:protPct,color:"#C4523A",val:`${food.protein}g`},
-        {label:"Carbs",pct:carbPct,color:"#4A8FE8",val:`${food.carbs}g`},
-        {label:"Fat",pct:fatPct,color:"#2DD4BF",val:`${food.fat}g`},
-      ].map(r=>`
-        <div class="result-prog-row">
-          <div class="result-prog-label">${r.label}</div>
-          <div class="result-prog-track">
-            <div class="result-prog-fill" style="width:${r.pct}%;background:linear-gradient(90deg,${r.color}66,${r.color});"></div>
-          </div>
-          <div class="result-prog-pct">${r.pct}%</div>
-        </div>`).join("")}
-    </div>
-
-    ${food.fiber||food.sugar||food.sodium?`
-    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-      ${food.fiber?`<div style="font-size:.72rem;color:var(--muted);">Fiber <strong style="color:var(--green);margin-left:4px;">${food.fiber}g</strong></div>`:""}
-      ${food.sugar!==undefined?`<div style="font-size:.72rem;color:var(--muted);">Sugar <strong style="color:#F59E0B;margin-left:4px;">${food.sugar}g</strong></div>`:""}
-      ${food.sodium?`<div style="font-size:.72rem;color:var(--muted);">Sodium <strong style="color:var(--muted);margin-left:4px;">${food.sodium}mg</strong></div>`:""}
-    </div>`:""}
-
-    <div class="result-flags">
-      ${(food.flags||[]).map(f=>`<div class="result-flag ${f.type}">${f.type==="ok"?"✓":f.type==="warn"?"⚠":"✗"} ${f.label}</div>`).join("")}
-    </div>
-
-    <button class="log-btn" onclick="logFood()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2 L8 14 M2 8 L14 8" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
-      LOG THIS FOOD · +${hasBad?25:food.protein>=20?75:50} XP
-    </button>
-  `;
-
-  section.scrollIntoView({behavior:"smooth",block:"nearest"});
-  if(hasBad) playWarnSound();
-}
 
 // ── LOG FOOD ──
-function logFood(){
-  if(!currentResult) return;
-  var hasBad=(currentResult.flags||[]).some(f=>f.type==="bad");
-  var xp=hasBad?25:currentResult.protein>=20?75:50;
-
-  dailyLog.push({...currentResult,xp,id:Date.now()});
-  totalXP+=xp;
-  document.getElementById("totalXP").textContent=totalXP;
-
-  playLogSound();
-  var btn=document.querySelector(".log-btn");
-  if(btn){
-    const rect=btn.getBoundingClientRect();
-    showXPPopup(xp,rect.left+rect.width*.5-20,rect.top-10);
-  }
-
-  // flash button
-  if(btn){
-    btn.style.background="linear-gradient(135deg,#2DD4BF,#0D8A7A)";
-    btn.textContent="✓ LOGGED!";
-    setTimeout(()=>{
-      btn.style.background="";
-      btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8 L6 12 L14 4" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>ALREADY LOGGED`;
-      btn.onclick=null;btn.style.opacity=".5";btn.style.cursor="default";
-    },1000);
-  }
-
-  renderLog();
-}
 
 // ── GET TOTALS ──
-function getDailyTotals(){
-  return dailyLog.reduce((acc,item)=>({
-    calories:acc.calories+(item.calories||0),
-    protein:acc.protein+(item.protein||0),
-    carbs:acc.carbs+(item.carbs||0),
-    fat:acc.fat+(item.fat||0),
-    fiber:acc.fiber+(item.fiber||0),
-  }),{calories:0,protein:0,carbs:0,fat:0,fiber:0});
-}
 
 // ── RENDER LOG ──
 function renderLog(){
@@ -9119,33 +8433,7 @@ document.getElementById("manualInput").addEventListener("keydown",e=>{
 var verseIndex = new Date().getDay() % VERSES.length;
 var verseRead = false;
 
-function renderVerse(){
-  var v = VERSES[verseIndex];
-  document.getElementById("dwVerse").textContent = v.verse;
-  document.getElementById("dwRef").textContent = `— ${v.ref}`;
-  var quoteEl = document.getElementById("dwQuote");
-  if(v.quote){
-    quoteEl.style.display = "block";
-    document.getElementById("dwQuoteText").textContent = v.quote;
-    document.getElementById("dwQuoteAuthor").textContent = `— ${v.author}`;
-  } else {
-    quoteEl.style.display = "none";
-  }
-  // set date
-  var d = new Date();
-  var days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
-  var months = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
-  document.getElementById("dwDay").textContent = `${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-}
 
-function nextVerse(){
-  verseIndex = (verseIndex + 1) % VERSES.length;
-  renderVerse();
-}
-function prevVerse(){
-  verseIndex = (verseIndex - 1 + VERSES.length) % VERSES.length;
-  renderVerse();
-}
 
 // ── GUILD DATA ──
 var MEMBERS = [
@@ -9227,101 +8515,9 @@ function renderPBMemberDmg(){
     </div>`).join("");
 }
 
-function renderMembers(){
-  document.getElementById("membersGrid").innerHTML=MEMBERS.map(m=>`
-    <div class="member-card ${m.you?"you":""}" style="--mc:${m.color};">
-      <div class="member-orb" style="background:rgba(${m.colorRGB},.08);border-color:rgba(${m.colorRGB},.15);">
-        ${orbSVG(m.color,44)}
-      </div>
-      <div class="member-info">
-        <div class="member-name-row">
-          <div class="member-name">${m.name}</div>
-          ${m.you?`<div class="member-you">YOU</div>`:""}
-        </div>
-        <div class="member-class" style="color:${m.color};">${m.cls}</div>
-        <div class="member-xp-bar">
-          <div class="member-xp-fill" style="width:${m.xpPct}%;background:linear-gradient(90deg,${m.color}55,${m.color});"></div>
-        </div>
-      </div>
-      <div class="member-right">
-        <div class="member-level" style="color:${m.color};">Lv ${m.level}</div>
-        <div class="member-tier" style="color:${m.color};border-color:${m.color};">${m.tier}</div>
-        <div class="member-streak" style="font-size:.65rem;color:var(--gold);">🔥 ${m.streak}d</div>
-      </div>
-    </div>`).join("");
-}
 
-function renderLeaderboard(){
-  var sorted=[...MEMBERS].sort((a,b)=>(b.level*1000+b.xpPct)-(a.level*1000+a.xpPct));
-  var rankColors=["#FFD700","#C0C0C0","#CD7F32","#8A7A68","#8A7A68","#8A7A68"];
-  var rankShadows=["rgba(255,215,0,.5)","rgba(192,192,192,.4)","rgba(205,127,50,.4)","","",""];
-  var rankSVG=(col,shadow)=>`<svg width="18" height="14" viewBox="0 0 18 14" fill="none" style="filter:${shadow?`drop-shadow(0 0 6px ${shadow})`:"none"}"><path d="M1 12 L3 5 L7 9 L9 2 L11 9 L15 5 L17 12 Z" fill="${col}" opacity=".9"/><rect x="1" y="12" width="16" height="2" rx="1" fill="${col}" opacity=".7"/></svg>`;
-  var rankNum=(n)=>`<span style="font-family:var(--font-display);font-size:.75rem;color:#8A7A68;">${n}</span>`;
 
-  document.getElementById("leaderboardEl").innerHTML = sorted.map((m,i)=>`
-    <div class="lb-row">
-      <div class="lb-rank" style="display:flex;align-items:center;justify-content:center;width:28px;">
-        ${i<3 ? rankSVG(rankColors[i],rankShadows[i]) : rankNum(i+1)}
-      </div>
-      <div class="lb-avatar" style="background:rgba(${m.colorRGB},.1);border-color:rgba(${m.colorRGB},.2);">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <defs><radialGradient id="orb${i}" cx="38%" cy="35%" r="55%"><stop offset="0%" stop-color="${m.color}" stop-opacity=".9"/><stop offset="100%" stop-color="#000" stop-opacity=".8"/></radialGradient></defs>
-          <circle cx="11" cy="11" r="10" fill="url(#orb${i})" stroke="${m.color}" stroke-width=".8" stroke-opacity=".5"/>
-          <ellipse cx="8" cy="8" rx="3" ry="2" fill="white" opacity=".2" transform="rotate(-20 8 8)"/>
-        </svg>
-      </div>
-      <div class="lb-info">
-        <div class="lb-name" style="${m.you?"color:var(--gold);font-weight:700;":""}">${m.name}${m.you?" ✦":""}</div>
-        <div class="lb-class">${m.cls} · ${m.streak}d streak 🔥</div>
-      </div>
-      <div class="lb-xp" style="color:${m.color};">Lv ${m.level}</div>
-    </div>`).join("");
-}
 
-function renderQuests(){
-  document.getElementById("questsEl").innerHTML = QUESTS.map(q=>`
-    <div class="quest-card" style="--qc:${q.color};--qcr:${q.colorRGB};">
-      ${q.done?`<div class="quest-complete">✓ COMPLETE</div>`:""}
-      <div class="quest-top">
-        <div class="quest-icon" style="width:44px;height:44px;flex-shrink:0;filter:drop-shadow(0 0 6px ${q.color});">
-          ${questIconSVG(q.icon,q.color,q.colorRGB)}
-        </div>
-        <div class="quest-info">
-          <div class="quest-name">${q.name}</div>
-          <div class="quest-desc">${q.desc}</div>
-          <div class="quest-reward">Reward: ${q.reward}</div>
-        </div>
-      </div>
-      <div class="quest-progress-row">
-        <div class="quest-prog-track">
-          <div class="quest-prog-fill" style="width:${Math.min(Math.round(q.prog/q.total*100),100)}%;${q.done?"opacity:.5":""}"></div>
-        </div>
-        <div class="quest-prog-txt" style="color:${q.color};">${q.prog} / ${q.total}</div>
-      </div>
-    </div>`).join("");
-}
-
-function renderChat(){
-  var container=document.getElementById("chatMessages");
-  container.innerHTML=chatMessages.map(m=>{
-    if(m.system) return `<div class="chat-system">${m.text}</div>`;
-    const isYou=m.sender==="IRON RECRUIT";
-    return `
-      <div class="chat-msg ${isYou?"you":""}">
-        <div class="chat-avatar" style="background:rgba(${isYou?"74,143,232":getColorRGB(m.color)},.1);border-color:rgba(${isYou?"74,143,232":getColorRGB(m.color)},.2);">
-          ${orbSVG(isYou?"#4A8FE8":(m.color||"#8A7878"),28)}
-        </div>
-        <div>
-          <div class="chat-meta">
-            <div class="chat-sender" style="color:${isYou?"var(--blue)":m.color||"var(--muted)"};">${m.sender}</div>
-            <div class="chat-time">${m.time}</div>
-          </div>
-          <div class="chat-bubble">${m.text}</div>
-        </div>
-      </div>`;
-  }).join("");
-  container.scrollTop=container.scrollHeight;
-}
 
 function getColorRGB(hex){
   if(!hex) return "255,255,255";
@@ -9332,45 +8528,8 @@ function getColorRGB(hex){
 }
 
 // ── SEND MESSAGE ──
-function sendMessage(){
-  var input=document.getElementById("chatInput");
-  var text=input.value.trim();
-  if(!text) return;
-  var now=new Date();
-  var days=["SUN","MON","TUE","WED","THU","FRI","SAT"];
-  var time=`${days[now.getDay()]} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
-  chatMessages.push({sender:"IRON RECRUIT",emoji:"⚔️",color:"#4A8FE8",text,time});
-  input.value="";
-  renderChat();
-  // simulate reply
-  var replies=[
-    {sender:"VOID STALKER",emoji:"💜",color:"#B8924A",text:"Let's go. Iron Covenant never quits."},
-    {sender:"SHADOW BLADE",emoji:"🗡️",color:"#B8924A",text:"Iron Covenant never sleeps. Stay the course."},
-    {sender:"FOREST GUARDIAN",emoji:"🌿",color:"#4CAF72",text:"Faith and discipline. The body is a temple."},
-    {sender:"STORM KNIGHT",emoji:"⚡",color:"#4A8FE8",text:"We're all in this together. The Covenant holds."},
-  ];
-  setTimeout(()=>{
-    const r=replies[Math.floor(Math.random()*replies.length)];
-    const now2=new Date();
-    const t2=`${days[now2.getDay()]} ${String(now2.getHours()).padStart(2,"0")}:${String(now2.getMinutes()).padStart(2,"0")}`;
-    chatMessages.push({...r,time:t2});
-    renderChat();
-  },1200+Math.random()*1800);
-}
 
 // ── TABS ──
-function switchTab(id){
-  ["overview","members","leaderboard","quests","chat"].forEach(t=>{
-    document.getElementById("tab-"+t).style.display=t===id?"block":"none";
-  });
-  document.querySelectorAll(".tab").forEach((tab,i)=>{
-    tab.classList.toggle("on",["overview","members","leaderboard","quests","chat"][i]===id);
-  });
-  if(id==="chat") setTimeout(()=>{
-    const c=document.getElementById("chatMessages");
-    if(c) c.scrollTop=c.scrollHeight;
-  },50);
-}
 
 // ── COPY CODE ──
 function copyCode(){
@@ -9466,85 +8625,6 @@ renderChat();
 // ══════════════════════════════════════════════
 //  SECTION BUILDERS (lazy mount)
 // ══════════════════════════════════════════════
-var SECTION_BUILDERS = {
-  meals: (el) => {
-    const ob = FF.onboarding;
-    const macros = FF.macros || {cal:2100,protein:140,carbs:180,fat:60,water:"3-4L"};
-    const mealCount = FF.mealCount || 5;
-    const mealColors = ["#C4523A","#4A8FE8","#4CAF72","#F59E0B","#A855F7","#2DD4BF","#FF3D6B","#B8924A","#4CAF72","#4A8FE8"];
-    const allMealNames = ["Breakfast","Mid-Morning","Lunch","Afternoon Snack","Dinner","Evening Snack","Pre-Workout","Post-Workout","Late Meal","Night Protein"];
-    const plan = ob && ob.mealPlan ? ob.mealPlan : null;
-    el.innerHTML = `<div style="padding:16px 16px 80px;">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
-        ${[[(macros.cal != null ? macros.cal.toLocaleString() : "—")+" kcal","Calories","#F59E0B"],[macros.protein+"g","Protein","#FF9070"],[macros.carbs+"g","Carbs","#FDE68A"],[macros.fat+"g","Fats","#99F6E4"],[macros.water||"3-4L","Water","#90C0FF"],[mealCount+" meals","Per Day","#B8924A"]].map(([v,l,c])=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 8px;text-align:center;"><div style="font-family:var(--font-display);font-size:.85rem;font-weight:700;color:${c};margin-bottom:2px;">${v}</div><div style="font-size:.54rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">${l}</div></div>`).join("")}
-      </div>
-      ${typeof planTotalsHTML==="function" ? planTotalsHTML(plan, macros) : ""}
-      ${(!ob||!ob.mealPlan)?`<div style="background:rgba(196,82,58,.06);border:1px solid rgba(196,82,58,.18);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;"><div style="font-family:var(--font-display);font-size:.72rem;color:#FF9070;margin-bottom:6px;">Meal Plan Not Set Up</div><div style="font-size:.72rem;color:var(--muted);margin-bottom:12px;">Complete your dietary profile to get a personalized meal plan.</div><button onclick="goSection('onboarding')" style="padding:10px 20px;border-radius:10px;background:rgba(196,82,58,.15);border:1px solid rgba(196,82,58,.3);color:#FF9070;font-family:var(--font-display);font-size:.72rem;cursor:pointer;">SET UP MY PLAN →</button></div>`:""}
-      ${Array.from({length:mealCount},(_,i)=>{
-        const m = plan ? plan[i] : null;
-        return mealCardHTML(m, i, "ms", allMealNames[i]||"Snack", mealColors[i%mealColors.length]);
-      }).join("")}
-    </div>`;
-  },
-
-  history: (el) => {
-    const streak = FF.streak||0;
-    const todayMeals = (FF.mealsToday||[]).filter(Boolean).length;
-    const todayMealMax = FF.mealCount||5;
-    const todayWater = FF.waterToday||0;
-    const today = new Date();
-    const dayLabels=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    const pastDays = Array.from({length:6},(_,i)=>{
-      const daysAgo=6-i; const d=new Date(today); d.setDate(d.getDate()-daysAgo);
-      const active=streak>=(6-i);
-      return {label:dayLabels[d.getDay()],meals:active?Math.min(todayMealMax-1+Math.floor(Math.random()*2),todayMealMax):Math.floor(Math.random()*3)+1,mealMax:todayMealMax,water:active?Math.floor(Math.random()*2)+6:Math.floor(Math.random()*4)+2,workout:active,xp:active?Math.floor(Math.random()*150)+200:Math.floor(Math.random()*100)+50,isToday:false};
-    });
-    const allDays=[...pastDays,{label:"Today",meals:todayMeals,mealMax:todayMealMax,water:todayWater,workout:todayMeals>=Math.ceil(todayMealMax*.8),xp:FF.xp||0,isToday:true}];
-    const mealColor=n=>n>=todayMealMax?"#4CAF72":n>=(todayMealMax/2)?"#F59E0B":"#C4523A";
-    const waterColor=n=>n>=8?"#4A8FE8":n>=5?"#2DD4BF":"#8A7878";
-    el.innerHTML=`<div style="padding:16px 16px 80px;">
-      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
-        <div style="flex:1;"><div style="font-family:var(--font-display);font-size:.82rem;font-weight:700;color:#F59E0B;">${streak}-Day Streak</div><div style="font-size:.68rem;color:var(--muted);margin-top:2px;">${streak>=30?"30-day legend!":streak>=14?"14-day champion!":streak>=7?"7-day warrior!":"Next: "+([7,14,30].find(n=>n>streak)||30)+"-day"}</div></div>
-      </div>
-      <div style="font-family:var(--font-display);font-size:.58rem;letter-spacing:.2em;color:rgba(212,168,255,.5);margin-bottom:10px;">LAST 7 DAYS</div>
-      ${allDays.slice().reverse().map(d=>`<div style="background:${d.isToday?"rgba(212,168,255,.05)":"rgba(255,255,255,.02)"};border:1px solid ${d.isToday?"rgba(212,168,255,.2)":"rgba(255,255,255,.05)"};border-left:3px solid ${mealColor(d.meals)};border-radius:14px;padding:12px 16px;margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-family:var(--font-display);font-size:.78rem;color:var(--cream);">${d.label}${d.isToday?" <span style='font-size:.5rem;background:rgba(212,168,255,.12);border:1px solid rgba(212,168,255,.2);color:#D4A8FF;padding:1px 5px;border-radius:4px;'>TODAY</span>":""}</span><span style="font-family:var(--font-display);font-size:.72rem;color:var(--gold);">+${d.xp.toLocaleString()} XP</span></div>
-        <div style="display:flex;gap:4px;margin-bottom:6px;">${Array.from({length:d.mealMax},(_,mi)=>`<div style="width:13px;height:13px;border-radius:3px;background:${mi<d.meals?mealColor(d.meals)+"BB":"rgba(255,255,255,.06)"};"></div>`).join("")}<span style="font-size:.6rem;color:${mealColor(d.meals)};margin-left:4px;">${d.meals}/${d.mealMax}</span></div>
-        <div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;"><div style="height:100%;width:${Math.round(d.water/8*100)}%;background:${waterColor(d.water)};border-radius:2px;"></div></div><span style="font-size:.6rem;color:${waterColor(d.water)};">${d.water}/8</span></div>
-      </div>`).join("")}
-    </div>`;
-  },
-
-  character: (el) => {
-    const pct = Math.round(Math.min((FF.xp||0)/(FF.xpToNext||500),1)*100);
-    el.innerHTML = `<div style="padding:20px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-      <div style="width:90px;height:90px;filter:drop-shadow(0 0 20px ${FF.color}66);">${makeOrb(FF.color,90)}</div>
-      <div style="text-align:center;">
-        <div style="font-family:var(--font-display-alt);font-size:1.3rem;font-weight:700;color:var(--cream);margin-bottom:4px;">${FF.name}</div>
-        <div style="font-family:var(--font-display);font-size:.76rem;letter-spacing:.1em;color:${FF.color};margin-bottom:2px;">${FF.className||""} · ${FF.tier||""}</div>
-        <div style="font-size:.68rem;color:var(--muted);">${[FF.bodyTypeName,FF.levelName,"Level "+(FF.level||1)].filter(Boolean).join(" · ")}</div>
-      </div>
-      <div style="width:100%;max-width:340px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-family:var(--font-display);font-size:.6rem;color:var(--muted);">LEVEL ${FF.level||1}</span><span style="font-family:var(--font-display);font-size:.6rem;color:var(--gold);">${(FF.xp||0).toLocaleString()} / ${(FF.xpToNext||500).toLocaleString()} XP</span></div>
-        <div style="height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${FF.color}88,${FF.color});border-radius:4px;"></div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:340px;">
-        ${[["STR","#C4523A"],["AGI","#4A8FE8"],["DEF","#A855F7"],["VIT","#4CAF72"]].map(([k,c])=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px 8px;text-align:center;"><div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:${c};">${(FF.stats&&FF.stats[k])||"—"}</div><div style="font-size:.55rem;color:var(--muted);">${k}</div></div>`).join("")}
-      </div>
-      ${FF.traits&&FF.traits.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:340px;">${FF.traits.map(t=>`<span style="font-family:var(--font-display);font-size:.6rem;padding:4px 10px;border-radius:8px;background:${FF.color}12;color:${FF.color};border:1px solid ${FF.color}28;">${t}</span>`).join("")}</div>`:""}
-      <div class="char-actions">
-        <button class="char-act primary wide" onclick="goSection('dashboard')">Back to Dashboard</button>
-        <button class="char-act" onclick="reforgeClass()">Reforge Class</button>
-        <button class="char-act" onclick="redoOnboarding()">Redo Meal Setup</button>
-        <button class="char-act wide" id="sfx-toggle" onclick="toggleSfx()">${FF.sfxOn===false?"Sound Effects: Off":"Sound Effects: On"}</button>
-        <button class="char-act danger wide" onclick="resetProfile()">Start Over — Erase Everything</button>
-      </div>
-      <div style="font-size:.66rem;line-height:1.6;color:rgba(240,232,220,.32);max-width:340px;text-align:center;">
-        Reforging changes your class, stats and calorie targets. You choose whether to carry your XP and level over or restart at Level 1 — your streak and meal plan stay either way.
-      </div>
-    </div>`;
-  },
-};
 
 // [mountSection: see first declaration above]
 
@@ -9565,94 +8645,6 @@ function generateFlags(protein,sugar,fat){
   return flags.length?flags:[{type:"ok",label:"Logged"}];
 }
 
-function showResult(food, barcode){
-  // Ensure flags always exists — generate from macros if missing
-  if(!food.flags || !Array.isArray(food.flags)){
-    food = Object.assign({}, food, {
-      flags: (typeof generateFlags==="function")
-        ? generateFlags(food.protein||0, food.sugar||0, food.fat||0)
-        : []
-    });
-  }
-  currentResult={...food,barcode};
-  var section=document.getElementById("resultSection");
-  var card=document.getElementById("resultCard");
-  section.style.display="block";
-
-  // daily progress % this item adds
-  var dailyTotals=getDailyTotals();
-  var calPct=Math.min(Math.round((food.calories/(TARGETS.calories))*100),99);
-  var protPct=Math.min(Math.round((food.protein/(TARGETS.protein))*100),99);
-  var carbPct=Math.min(Math.round((food.carbs/(TARGETS.carbs))*100),99);
-  var fatPct=Math.min(Math.round((food.fat/(TARGETS.fat))*100),99);
-
-  var hasBad=food.flags.some(f=>f.type==="bad");
-
-  card.innerHTML=`
-    <div class="result-top">
-      <div class="result-icon" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;">${food.emoji}</div>
-      <div class="result-info">
-        <div class="result-name">${food.name}</div>
-        <div class="result-brand">${food.brand}</div>
-        <div class="result-serving">Per serving: ${food.serving}</div>
-      </div>
-    </div>
-
-    <div class="result-macros">
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#F59E0B;">${food.calories}</div>
-        <div class="result-macro-label">Calories</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#C4523A;">${food.protein}g</div>
-        <div class="result-macro-label">Protein</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#4A8FE8;">${food.carbs}g</div>
-        <div class="result-macro-label">Carbs</div>
-      </div>
-      <div class="result-macro">
-        <div class="result-macro-val" style="color:#2DD4BF;">${food.fat}g</div>
-        <div class="result-macro-label">Fat</div>
-      </div>
-    </div>
-
-    <div class="result-progress">
-      ${[
-        {label:"Calories",pct:calPct,color:"#F59E0B",val:`${food.calories} kcal`},
-        {label:"Protein",pct:protPct,color:"#C4523A",val:`${food.protein}g`},
-        {label:"Carbs",pct:carbPct,color:"#4A8FE8",val:`${food.carbs}g`},
-        {label:"Fat",pct:fatPct,color:"#2DD4BF",val:`${food.fat}g`},
-      ].map(r=>`
-        <div class="result-prog-row">
-          <div class="result-prog-label">${r.label}</div>
-          <div class="result-prog-track">
-            <div class="result-prog-fill" style="width:${r.pct}%;background:linear-gradient(90deg,${r.color}66,${r.color});"></div>
-          </div>
-          <div class="result-prog-pct">${r.pct}%</div>
-        </div>`).join("")}
-    </div>
-
-    ${food.fiber||food.sugar||food.sodium?`
-    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-      ${food.fiber?`<div style="font-size:.72rem;color:var(--muted);">Fiber <strong style="color:var(--green);margin-left:4px;">${food.fiber}g</strong></div>`:""}
-      ${food.sugar!==undefined?`<div style="font-size:.72rem;color:var(--muted);">Sugar <strong style="color:#F59E0B;margin-left:4px;">${food.sugar}g</strong></div>`:""}
-      ${food.sodium?`<div style="font-size:.72rem;color:var(--muted);">Sodium <strong style="color:var(--muted);margin-left:4px;">${food.sodium}mg</strong></div>`:""}
-    </div>`:""}
-
-    <div class="result-flags">
-      ${(food.flags||[]).map(f=>`<div class="result-flag ${f.type}">${f.type==="ok"?"✓":f.type==="warn"?"⚠":"✗"} ${f.label}</div>`).join("")}
-    </div>
-
-    <button class="log-btn" onclick="logFood()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2 L8 14 M2 8 L14 8" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg>
-      LOG THIS FOOD · +${hasBad?25:food.protein>=20?75:50} XP
-    </button>
-  `;
-
-  section.scrollIntoView({behavior:"smooth",block:"nearest"});
-  if(hasBad) playWarnSound();
-}
 
 function lookupManual(){
   var code = (document.getElementById("manual-barcode").value||"").trim().toUpperCase();
@@ -9916,32 +8908,6 @@ function renderLeaderboard(){
     </div>`).join("");
 }
 
-function claimDevotion(){
-  var today=new Date().toDateString();
-  if(FF.devotionDate===today){
-    showToast("Already claimed today","#8A7878");
-    // Still update button state
-    var gb=document.getElementById("devotion-btn");
-    if(gb){ gb.style.opacity=".5"; gb.style.pointerEvents="none"; gb.innerHTML=gb.innerHTML.replace("CLAIM DAILY DEVOTION","✓ CLAIMED TODAY"); }
-    var ds=document.getElementById("devotionStatus");
-    if(ds) ds.style.display="block";
-    return;
-  }
-  FF.devotionDate=today; FF.streak++; saveState();
-  gainXP(50,"Daily Devotion");
-  if(typeof checkStreakMilestone==="function") checkStreakMilestone(FF.streak);
-  var gb=document.getElementById("devotion-btn");
-  if(gb){
-    if(typeof SFX!=="undefined") SFX.devotion();
-    gb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#4CAF72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> DEVOTION CLAIMED · +50 XP';
-    gb.style.color="#4CAF72";
-    gb.style.borderColor="rgba(76,175,114,.35)";
-    gb.style.background="rgba(76,175,114,.08)";
-    gb.style.pointerEvents="none";
-  }
-  var ds=document.getElementById("devotionStatus");
-  if(ds) ds.style.display="block";
-}
 function learnSpell(name,xp){
   if((FF.spellsLearned||[]).includes(name)){ showToast(name+" already mastered","#8A7878"); return; }
   FF.spellsLearned=[...(FF.spellsLearned||[]),name]; saveState();
@@ -10681,11 +9647,6 @@ function pickOption(containerId, stateKey, id){
   if(el) el.classList.add("selected");
 }
 
-function updateBudget(v){
-  S.budget = parseInt(v,10) || 75;
-  var el = document.getElementById("budgetVal");
-  if(el) el.textContent = "$" + S.budget + (S.budget >= 400 ? "+" : "");
-}
 
 function logFood_shell(name, protein){
   protein = Number(protein) || 0;
@@ -10810,68 +9771,6 @@ var COOLDOWN = [
 ];
 
 /* Split templates keyed by the class's training character */
-var SPLIT_LIBRARY = {
-  endurance:{
-    label:"Aerobic Base + Strength Support",
-    days:[
-      {day:"Monday",   focus:"Easy Aerobic Run",     work:["45-60 min zone 2 — you can hold a conversation","4 x 20 s strides at the end"]},
-      {day:"Tuesday",  focus:"Full-Body Strength",   work:["Back squat 3 x 6","Romanian deadlift 3 x 8","Push-up 3 x 12","Single-leg calf raise 3 x 15"]},
-      {day:"Wednesday",focus:"Intervals",            work:["10 min warm-up","6 x 3 min at 5K pace / 2 min jog","10 min cool-down"]},
-      {day:"Thursday", focus:"Recovery",             work:["30-40 min easy spin or swim","Mobility circuit x 2"]},
-      {day:"Friday",   focus:"Tempo",                work:["20-30 min at comfortably-hard pace","Core circuit — 3 rounds"]},
-      {day:"Saturday", focus:"Long Session",         work:["75-120 min steady — the week's key session","Fuel 30-60 g carbs per hour past 75 min"]},
-      {day:"Sunday",   focus:"Rest",                 work:["Full rest or a 20 min walk"]}
-    ]
-  },
-  strength:{
-    label:"Upper / Lower Strength",
-    days:[
-      {day:"Monday",   focus:"Lower — Heavy",   work:["Back squat 5 x 5","Romanian deadlift 4 x 6","Walking lunge 3 x 10 per leg","Standing calf raise 4 x 12"]},
-      {day:"Tuesday",  focus:"Upper — Heavy",   work:["Bench press 5 x 5","Weighted pull-up 4 x 5","Overhead press 4 x 6","Barbell row 4 x 8"]},
-      {day:"Wednesday",focus:"Conditioning",    work:["20 min easy zone 2","Loaded carries — 6 x 40 m"]},
-      {day:"Thursday", focus:"Lower — Volume",  work:["Front squat 4 x 8","Hip thrust 4 x 10","Bulgarian split squat 3 x 10 per leg","Hamstring curl 3 x 12"]},
-      {day:"Friday",   focus:"Upper — Volume",  work:["Incline dumbbell press 4 x 10","Chest-supported row 4 x 10","Lateral raise 4 x 15","Face pull 3 x 20","Curl / triceps superset 3 x 12"]},
-      {day:"Saturday", focus:"Accessory + Core",work:["Sled push 8 x 20 m","Hanging leg raise 4 x 12","Plank 3 x 60 s","Ab wheel 3 x 10"]},
-      {day:"Sunday",   focus:"Rest",            work:["Full rest — this is where the growth happens"]}
-    ]
-  },
-  hypertrophy:{
-    label:"Push / Pull / Legs",
-    days:[
-      {day:"Monday",   focus:"Push",   work:["Bench press 4 x 8","Incline dumbbell press 3 x 10","Overhead press 3 x 10","Lateral raise 4 x 15","Triceps rope 3 x 15"]},
-      {day:"Tuesday",  focus:"Pull",   work:["Pull-up 4 x 8","Barbell row 4 x 10","Lat pulldown 3 x 12","Rear delt fly 3 x 15","Barbell curl 3 x 12"]},
-      {day:"Wednesday",focus:"Legs",   work:["Back squat 4 x 8","Romanian deadlift 4 x 10","Leg press 3 x 12","Leg curl 3 x 15","Calf raise 4 x 15"]},
-      {day:"Thursday", focus:"Push",   work:["Incline barbell press 4 x 8","Dip 3 x 10","Cable fly 3 x 15","Arnold press 3 x 12","Overhead triceps 3 x 12"]},
-      {day:"Friday",   focus:"Pull",   work:["Deadlift 3 x 5","Chest-supported row 4 x 10","Single-arm pulldown 3 x 12","Shrug 3 x 15","Hammer curl 3 x 12"]},
-      {day:"Saturday", focus:"Legs + Core",work:["Front squat 4 x 8","Hip thrust 4 x 12","Walking lunge 3 x 12 per leg","Hanging leg raise 4 x 12"]},
-      {day:"Sunday",   focus:"Rest",   work:["Full rest or 30 min walk"]}
-    ]
-  },
-  athletic:{
-    label:"Power / Speed / Conditioning",
-    days:[
-      {day:"Monday",   focus:"Power Lower", work:["Box jump 5 x 3","Trap bar deadlift 5 x 3","Split squat 3 x 8 per leg","Nordic curl 3 x 6"]},
-      {day:"Tuesday",  focus:"Speed",       work:["Sprint drills 15 min","6 x 30 m accelerations, full recovery","Lateral bounds 4 x 6 per side"]},
-      {day:"Wednesday",focus:"Power Upper", work:["Medicine ball chest throw 5 x 5","Bench press 5 x 3","Weighted pull-up 4 x 5","Landmine press 3 x 8 per side"]},
-      {day:"Thursday", focus:"Conditioning",work:["Assault bike 10 x 30 s hard / 90 s easy","Core circuit x 3"]},
-      {day:"Friday",   focus:"Full-Body",   work:["Hang clean 5 x 3","Front squat 4 x 5","Push press 4 x 5","Pull-up 4 x 8"]},
-      {day:"Saturday", focus:"Sport / Play",work:["60-90 min of your sport, a scrimmage, or mixed field work"]},
-      {day:"Sunday",   focus:"Rest",        work:["Full rest, mobility only"]}
-    ]
-  },
-  hybrid:{
-    label:"Concurrent Strength + Engine",
-    days:[
-      {day:"Monday",   focus:"Strength — Lower",  work:["Back squat 4 x 5","Romanian deadlift 3 x 8","Step-up 3 x 10 per leg"]},
-      {day:"Tuesday",  focus:"Engine",            work:["40 min zone 2","Core circuit x 3"]},
-      {day:"Wednesday",focus:"Strength — Upper",  work:["Bench press 4 x 5","Weighted pull-up 4 x 6","Overhead press 3 x 8","Row 3 x 10"]},
-      {day:"Thursday", focus:"Intervals",         work:["5 x 4 min hard / 3 min easy","10 min cool-down"]},
-      {day:"Friday",   focus:"Full-Body",         work:["Deadlift 4 x 4","Push press 4 x 6","Chin-up 4 x 8","Carry 5 x 40 m"]},
-      {day:"Saturday", focus:"Long Aerobic",      work:["60-90 min steady effort"]},
-      {day:"Sunday",   focus:"Rest",              work:["Full rest"]}
-    ]
-  }
-};
 
 /* Which split each class trains on */
 var CLASS_SPLIT = {
@@ -10928,51 +9827,7 @@ var GOAL_TUNING = {
   }
 };
 
-function trainPlanFor(){
-  var classId = (FF && FF.classId) || (typeof selectedClass === "number" && CLASSES[selectedClass] ? CLASSES[selectedClass].id : "warrior");
-  var goalId  = (FF && FF.onboarding && FF.onboarding.goal) || S.goal || "recomp";
-  var splitKey = CLASS_SPLIT[classId] || "strength";
-  return {
-    classId: classId,
-    className: (FF && FF.className) || "Your Class",
-    split: SPLIT_LIBRARY[splitKey],
-    goal: GOAL_TUNING[goalId] || GOAL_TUNING.recomp
-  };
-}
 
-function buildTrainSection(el){
-  var plan = trainPlanFor();
-  var g = plan.goal, sp = plan.split;
-  el.innerHTML =
-  '<div class="train-page">' +
-    '<div class="train-hero">' +
-      '<div class="train-eyebrow">' + plan.className + '</div>' +
-      '<div class="train-split-name">' + sp.label + '</div>' +
-      '<div class="train-goal-chip" style="color:' + g.color + ';border-color:' + g.color + '55;background:' + g.color + '14;">' + g.label + ' · ' + g.calNote + '</div>' +
-    '</div>' +
-
-    '<div class="section-title"><div class="st-inner"><span class="st-text">How to run this block</span></div><div class="st-line"></div></div>' +
-    '<ul class="train-rules">' + g.rules.map(function(r){ return '<li>' + r + '</li>'; }).join("") + '</ul>' +
-
-    '<div class="section-title"><div class="st-inner"><span class="st-text">Warm-Up · every session</span></div><div class="st-line"></div></div>' +
-    '<ol class="train-routine">' + WARMUP.map(function(x){ return '<li>' + x + '</li>'; }).join("") + '</ol>' +
-
-    '<div class="section-title"><div class="st-inner"><span class="st-text">The Week</span></div><div class="st-line"></div></div>' +
-    sp.days.map(function(d, i){
-      var rest = /rest/i.test(d.focus);
-      return '<div class="train-day' + (rest ? ' rest' : '') + '">' +
-        '<div class="train-day-head">' +
-          '<span class="train-day-name">' + d.day + '</span>' +
-          '<span class="train-day-focus">' + d.focus + '</span>' +
-        '</div>' +
-        '<ul class="train-work">' + d.work.map(function(w){ return '<li>' + w + '</li>'; }).join("") + '</ul>' +
-      '</div>';
-    }).join("") +
-
-    '<div class="section-title"><div class="st-inner"><span class="st-text">Cool-Down · every session</span></div><div class="st-line"></div></div>' +
-    '<ol class="train-routine">' + COOLDOWN.map(function(x){ return '<li>' + x + '</li>'; }).join("") + '</ol>' +
-  '</div>';
-}
 
 /* Register the Train builder with the existing section system */
 if(typeof SECTION_BUILDERS !== "undefined") SECTION_BUILDERS.train = buildTrainSection;
@@ -12946,41 +11801,6 @@ function toggleForm(id, btn){
   if(btn) btn.classList.toggle("on", open);
 }
 
-function exerciseHTML(entry, dayIdx, i){
-  var ex = EXERCISES[entry.id];
-  if(!ex) return "";
-  var id = "form-" + dayIdx + "-" + i;
-  var tone = rpeTone(entry.rpe);
-  var vid = exerciseVideo(entry.id, ex);
-  return '' +
-  '<div class="ex-card">' +
-    '<div class="ex-head">' +
-      '<div class="ex-name">' + ex.name + '</div>' +
-      '<div class="ex-rpe" style="color:' + tone + ';border-color:' + tone + '55;background:' + tone + '14;" title="Rate of Perceived Exertion">RPE ' + entry.rpe + '</div>' +
-    '</div>' +
-    '<div class="ex-prescription">' +
-      '<span class="ex-chip">' + entry.sets + ' × ' + entry.reps + '</span>' +
-      '<span class="ex-chip subtle">' + rpeMeaning(entry.rpe) + '</span>' +
-      (entry.rest ? '<button class="ex-chip rest" onclick="startRest(' + entry.rest + ',\'' + ex.name.replace(/'/g, "") + ' — rest between sets\')">⏱ rest ' + restLabel(entry.rest) + '</button>' : '') +
-      (ex.equipment ? '<span class="ex-chip subtle">' + ex.equipment + '</span>' : '') +
-    '</div>' +
-    (entry.note ? '<div class="ex-note">' + entry.note + '</div>' : '') +
-    '<button class="form-toggle" onclick="toggleForm(\'' + id + '\',this)">' +
-      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v.01M11 12h1v4h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
-      'HOW TO DO IT' +
-    '</button>' +
-    '<div class="form-panel" id="' + id + '">' +
-      formDiagram(ex.pattern, tone) +
-      '<ul class="form-cues">' + ex.cues.map(function(c){ return '<li>' + c + '</li>'; }).join("") + '</ul>' +
-      '<a class="form-video' + (vid.pinned ? ' pinned' : '') + '" href="' + vid.url + '" target="_blank" rel="noopener noreferrer">' +
-        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="5" width="19" height="14" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor"/></svg>' +
-        (vid.pinned
-          ? '<span>Watch the form breakdown</span>'
-          : '<span>Form breakdown on ' + vid.channel.replace(/([a-z])([A-Z])/g, "$1 $2") + '</span>') +
-      '</a>' +
-    '</div>' +
-  '</div>';
-}
 
 function trainPlanFor(){
   var classId = (FF && FF.classId) ||
@@ -13516,25 +12336,6 @@ function updateMusicBtn(){
 
 /* ── A short click for expanding and collapsing things ── */
 var _uiSoundReady = false;
-function playTick(open){
-  try{
-    var ctx = getAC();
-    if(!ctx) return;
-    var t = ctx.currentTime;
-    var o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
-    f.type = "bandpass";
-    f.frequency.value = open ? 1650 : 1150;
-    f.Q.value = 2.2;
-    o.type = "triangle";
-    o.frequency.setValueAtTime(open ? 620 : 460, t);
-    o.frequency.exponentialRampToValueAtTime(open ? 900 : 320, t + 0.05);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.055, t + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
-    o.connect(f); f.connect(g); g.connect(ctx.destination);
-    o.start(t); o.stop(t + 0.13);
-  }catch(e){}
-}
 
 /* Wrap the panel toggles so each one clicks */
 (function(){
@@ -19081,6 +17882,134 @@ var GUILD_ENABLED = false;
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SWITCHING PHASE HAS TO MOVE THE TARGETS
+   Bobby found this: changing Bulk to Cut relabelled the phase and
+   left the calorie target exactly where it was.
+
+   The cause: setPhase() only rebuilt targets when
+   FF.macrosFromBodyweight was true, and that flag is only set by
+   tapping "Use these targets" in Body Log. Anyone who had not done
+   that — which is everyone by default, including people who HAD
+   logged a weight — switched phase and got a new label over the
+   same numbers. Switching phase is the whole feature; the label was
+   the only part working.
+
+   Now targets always rebuild, by the best route available:
+     1. A real bodyweight  → macroPreview(), the engine with
+        percentage-based shifts, a 1200 kcal floor and a 25% maximum
+        deficit.
+     2. No bodyweight yet  → shift the existing target by the
+        difference between the old goal and the new one, using the
+        same arithmetic onboarding used to build it.
+═══════════════════════════════════════════════════════════════ */
+
+/* The shifts onboarding applied in calcFinalMacros(). Kept identical
+   on purpose — this has to be the inverse of what built the number. */
+var PHASE_CAL_SHIFT = { lose:-400, recomp:0, build:300, performance:100,
+                        maintain:0, skill:0 };
+var PHASE_ACT_MULT  = { sedentary:0.93, light:0.97, moderate:1.0,
+                        very:1.06, extreme:1.12 };
+var PHASE_CAL_FLOOR = 1400;   /* the floor onboarding already enforces */
+
+/* Rebuild for `toGoal`, having been on `fromGoal`.
+   Returns "bodyweight" | "shifted" | null so the toast can say which. */
+function rebuildTargetsForPhase(fromGoal, toGoal){
+  /* ── 1. the good engine, whenever a real weight exists ── */
+  var lb = (typeof currentWeightLb === "function") ? currentWeightLb() : 0;
+  if(lb > 0 && typeof macroPreview === "function"){
+    var m = macroPreview();
+    if(m){
+      FF.macros = {cal:m.cal, protein:m.protein, carbs:m.carbs,
+                   fat:m.fat, water:m.water};
+      if(FF.onboarding) FF.onboarding.macros = FF.macros;
+      /* they have a weight and we just used it — stop pretending otherwise */
+      FF.macrosFromBodyweight = true;
+      return "bodyweight";
+    }
+  }
+
+  /* ── 2. no weight: move the target by the difference between goals ──
+     onboarding computed  cal = (base + shift[goal]) * actMult
+     so switching goal is  cal += (shift[new] - shift[old]) * actMult
+     which needs no knowledge of `base`. */
+  var cur = FF.macros;
+  if(!cur || !cur.cal) return null;
+
+  var act = (FF.onboarding && FF.onboarding.activity) || "moderate";
+  var mult = PHASE_ACT_MULT[act] || 1;
+  var from = PHASE_CAL_SHIFT[fromGoal] || 0;
+  var to   = PHASE_CAL_SHIFT[toGoal]   || 0;
+
+  var cal = Math.round(cur.cal + (to - from) * mult);
+  cal = Math.max(cal, PHASE_CAL_FLOOR);
+
+  /* protein carried a 1.08 bump while cutting; undo it, then reapply */
+  var baseProtein = Math.round((cur.protein || 0) / (fromGoal === "lose" ? 1.08 : 1));
+  var protein = Math.round(baseProtein * (toGoal === "lose" ? 1.08 : 1));
+
+  var fat = Math.max(Math.round(cal * 0.27 / 9), 40);
+  var carbs = Math.max(Math.round((cal - protein * 4 - fat * 9) / 4), 40);
+
+  FF.macros = {cal:cal, protein:protein, carbs:carbs, fat:fat,
+               water:cur.water || "3-4L"};
+  if(FF.onboarding) FF.onboarding.macros = FF.macros;
+  return "shifted";
+}
+
+/* Replaces the original. Same signature, same side effects, plus the
+   rebuild actually happening and the toast saying what moved. */
+function setPhase(id){
+  var p = PHASE_BY_ID[id];
+  if(!p || id === currentPhaseId()) return;
+
+  var from = currentPhaseId();
+  var beforeCal = (FF.macros && FF.macros.cal) || 0;
+
+  if(!FF.onboarding) FF.onboarding = {};
+  FF.onboarding.goal = id;
+  if(typeof S !== "undefined" && S) S.goal = id;
+  phaseLog().push({at:Date.now(), from:from, to:id});
+
+  var how = null;
+  try{ how = rebuildTargetsForPhase(from, id); }catch(e){}
+
+  if(typeof saveState === "function") saveState();
+  if(typeof SFX !== "undefined" && SFX.confirm) SFX.confirm();
+
+  if(typeof showToast === "function"){
+    var afterCal = (FF.macros && FF.macros.cal) || 0;
+    if(how && afterCal && afterCal !== beforeCal){
+      showToast(p.label + " · " + beforeCal.toLocaleString() + " → " +
+                afterCal.toLocaleString() + " kcal", p.color);
+    } else if(how === "shifted" && afterCal === beforeCal){
+      showToast(p.label + " — same calories, different split", p.color);
+    } else {
+      showToast(p.label, p.color);
+    }
+  }
+
+  /* Anyone who switched phase without a logged weight got the rougher
+     arithmetic. Say so once, rather than let them assume the number is
+     built on their body. */
+  if(how === "shifted" && typeof showToast === "function"){
+    setTimeout(function(){
+      showToast("Log your weight in Body Log for a target built on you", "#8A7878");
+    }, 2400);
+  }
+
+  try{
+    if(typeof _mounted !== "undefined" && _mounted.delete){
+      _mounted.delete("meals"); _mounted.delete("train"); _mounted.delete("history");
+    }
+    if(typeof buildHomeDashboard === "function") buildHomeDashboard();
+  }catch(e){}
+  try{ rerenderHistory(); }catch(e){}
+  try{ if(typeof rerenderBody === "function") rerenderBody(); }catch(e){}
+}
 
 </script>
 </body>
