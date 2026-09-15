@@ -3904,6 +3904,13 @@ button.sum-card:hover{border-color:rgba(var(--rgb-ink),.18);}
 
 @media (prefers-reduced-motion:reduce){ .sr-part{transition:none;} }
 
+
+/* Build stamp on the reference page — see buildstamp.js for why. */
+.ff-buildstamp{
+  margin:26px auto 8px;text-align:center;
+  font-family:var(--font-display);font-size:.58rem;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(var(--rgb-text),.3);
+}
 </style>
 </head>
 <body>
@@ -17586,8 +17593,13 @@ document.addEventListener("click", function(e){
 ═══════════════════════════════════════════════════════════════ */
 (function registerSW(){
   if(!("serviceWorker" in navigator)) return;
-  /* file:// and blob: contexts throw; only real http(s) can register */
-  if(location.protocol !== "https:" && location.hostname !== "localhost") return;
+  /* file:// and blob: contexts throw; only a secure origin can register.
+     This used to test `hostname === "localhost"` literally, which excluded
+     127.0.0.1 and [::1] — both perfectly valid secure origins, and both
+     things a person testing a build locally will reach for. isSecureContext
+     is the browser's own answer to the question being asked. */
+  if(location.protocol === "file:") return;
+  if(!window.isSecureContext) return;
 
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js").then(function(reg){
@@ -18010,6 +18022,560 @@ function setPhase(id){
   try{ rerenderHistory(); }catch(e){}
   try{ if(typeof rerenderBody === "function") rerenderBody(); }catch(e){}
 }
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   THE PLAN HAS TO FOLLOW THE TARGET
+
+   Bobby: "the meals remain the same at the same previous macro count
+   and meal recipe with weight and measurements."
+
+   Two separate faults sat behind that one sentence.
+
+   1. FF.onboarding.mealPlan is a SNAPSHOT taken at onboarding. Nothing
+      ever rebuilt it, so the meals, their macros and their printed
+      quantities were frozen from the day the account was made.
+
+   2. Even rebuilt, it would not have moved. buildMealPlan() picks meals
+      by diet and meal count only — the calorie target is used for the
+      summary tiles and nowhere else. The library carries fixed portions,
+      so the plan landed wherever it landed.
+
+   And behind both, a third: calcFinalMacros() held protein at whatever
+   onboarding first computed and let carbs absorb every calorie change.
+   Switching to a bulk pushed carbs to 343g against 150g protein — 22%
+   of calories — which no meal plan in a strength app is going to match.
+   macroPreview() already did this properly, off bodyweight. The two
+   engines simply disagreed.
+
+   Fixed here:
+     · protein anchored to bodyweight in BOTH engines, 0.8–1.0 g/lb by
+       phase, from the PROTEIN_PER_LB table the app already had
+     · the stored plan kept as an unscaled base, with portions scaled to
+       the live target every time the target moves
+     · ingredient quantities rewritten with the portions, so the recipe
+       tells you to cook what the macros claim you ate
+═══════════════════════════════════════════════════════════════ */
+
+
+/* ── ONE PROTEIN RULE, BOTH ENGINES ─────────────────────────── */
+
+/* The estimate onboarding falls back on before anyone has stepped on a
+   scale. Same table calcMacros() uses; kept here so the rule can be
+   applied without a class object in hand. */
+var FF_WEIGHT_EST = {ranger:145, warrior:175, guardian:240, assassin:165,
+                     titan:195, hydra:155, berserker:175, olympian:210,
+                     ascendant:165};
+
+function planningWeightLb(){
+  var logged = (typeof currentWeightLb === "function") ? currentWeightLb() : 0;
+  if(logged > 0) return logged;
+  var id = (FF && (FF.classId || FF.cls)) ||
+           (typeof S !== "undefined" && S ? S.cls : null) || "";
+  return FF_WEIGHT_EST[String(id).toLowerCase()] || 175;
+}
+
+function proteinTargetFor(goal, lb){
+  var perLb = (typeof PROTEIN_PER_LB !== "undefined" && PROTEIN_PER_LB[goal] != null)
+              ? PROTEIN_PER_LB[goal] : 0.9;
+  return Math.max(Math.round((lb || planningWeightLb()) * perLb), 60);
+}
+
+var FF_GOAL_SHIFT = {lose:-400, recomp:0, build:300, performance:100, maintain:0, skill:0};
+var FF_ACT_MULT   = {sedentary:0.93, light:0.97, moderate:1.0, very:1.06, extreme:1.12};
+
+/* The goal-neutral starting point, worked out once and then remembered.
+
+   The original read FF.macros as its base whenever no class was selected —
+   but FF.macros is the OUTPUT, already carrying a goal shift. Calling the
+   function twice therefore applied the shift twice, and build -> cut -> build
+   drifted further from the truth on every round trip. Onboarding is the only
+   caller today, and it runs with a class selected, so the app never hit it.
+   It was still a trap sitting one refactor away from going off. */
+function planningBaseMacros(){
+  var ob = (FF && FF.onboarding) || null;
+  if(ob && ob.macrosBase && ob.macrosBase.cal) return ob.macrosBase;
+
+  var base;
+  if(typeof selectedClass === "number" && CLASSES[selectedClass] &&
+     typeof selectedLevel === "number" && LEVELS[selectedLevel]){
+    base = calcMacros(CLASSES[selectedClass], LEVELS[selectedLevel],
+                      (typeof selectedBody === "number" && selectedBody !== null) ? BODY_TYPES[selectedBody] : null);
+  } else if(FF && FF.macros && FF.macros.cal){
+    /* Back the goal and activity out of the saved target to recover what it
+       was built from, so the shift is applied once and only once. */
+    var wasGoal = (ob && (ob.macrosGoal || ob.goal)) || "recomp";
+    var wasAct  = (ob && ob.activity) || "moderate";
+    var mult = FF_ACT_MULT[wasAct] || 1;
+    base = {cal: Math.round(FF.macros.cal / mult - (FF_GOAL_SHIFT[wasGoal] || 0)),
+            protein:FF.macros.protein, carbs:FF.macros.carbs,
+            fat:FF.macros.fat, water:FF.macros.water || "3-4L"};
+  } else {
+    base = {cal:2100, protein:150, carbs:200, fat:65, water:"3-4L"};
+  }
+  if(ob) ob.macrosBase = base;
+  return base;
+}
+
+/* Onboarding's engine, with protein no longer frozen. Calories and the
+   fat share are untouched — only the protein line changes, and carbs
+   take the remainder as they always did. */
+function calcFinalMacros(){
+  var base = planningBaseMacros();
+
+  var goalShift = FF_GOAL_SHIFT;
+  var actMult   = FF_ACT_MULT;
+  var goal = (typeof S !== "undefined" && S && S.goal) || "recomp";
+  var act  = (typeof S !== "undefined" && S && S.activity) || "moderate";
+
+  var cal = Math.round((base.cal + (goalShift[goal] || 0)) * (actMult[act] || 1));
+  cal = Math.max(cal, 1400);
+  if(FF && FF.onboarding) FF.onboarding.macrosGoal = goal;
+
+  /* Protein rides bodyweight, not the calorie total — it is the one
+     number that should hold when you cut and not balloon when you bulk. */
+  var protein = proteinTargetFor(goal, planningWeightLb());
+  var fat     = Math.max(Math.round(cal * 0.27 / 9), 40);
+  var carbs   = Math.max(Math.round((cal - protein * 4 - fat * 9) / 4), 40);
+
+  return {cal:cal, protein:protein, carbs:carbs, fat:fat, water:base.water || "3-4L"};
+}
+
+
+/* ── QUANTITY REWRITING ─────────────────────────────────────── */
+
+/* Leading amount: whole, decimal, fraction, or mixed ("1 1/2"). 226 of the
+   230 ingredient strings in the library match; the four that do not are
+   "Ice", "Mustard" and two seasonings, which should not scale anyway. */
+var QTY_RE = /^(\s*)(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)(\s+)([\s\S]*)$/;
+
+/* Things that do not get bigger because you eat more. Aromatics, acid,
+   seasoning and the water or ice a shake is blended with. */
+var QTY_NO_SCALE = /\b(garlic|clove|cloves|lemon|lime|zest|ice|water|salt|pepper|seasoning|vanilla|cinnamon|oregano|thyme|dill|chives|paprika|cumin|mustard|sriracha|hot sauce|nutritional yeast)\b/i;
+
+/* Step to snap to, by the word that follows the number. Anything not
+   listed falls back to quarters, which reads fine for cups. */
+var QTY_STEP = {
+  oz:1, lb:0.25, g:5, ml:25,
+  cup:0.25, cups:0.25, tbsp:0.5, tsp:0.25,
+  scoop:0.5, scoops:0.5,
+  can:1, cans:1, tin:1, tins:1, jar:1,
+  slice:1, slices:1, sheet:1, sheets:1, rasher:1, rashers:1,
+  bunch:1, head:1, heads:1, spear:1, spears:1
+};
+/* A number followed by one of these is counting objects, so it lands on
+   a whole number — nobody measures out 2.6 eggs. */
+var QTY_COUNT = /^(whole|large|medium|small|boiled|sliced|diced|chopped|eggs?|banana|bananas|apple|apples|avocado|avocados|cucumber|carrot|carrots|tomato|tomatoes|onion|bell|corn|asparagus|rice cakes?|potato|potatoes|sweet)\b/i;
+
+function qtyToNumber(s){
+  s = String(s).trim();
+  var mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if(mixed) return (+mixed[1]) + (+mixed[2] / +mixed[3]);
+  var frac = s.match(/^(\d+)\/(\d+)$/);
+  if(frac) return (+frac[1]) / (+frac[2]);
+  var n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+/* Back to something a person would read on a recipe card. */
+var QTY_FRACTIONS = [[0,""],[0.25,"1/4"],[1/3,"1/3"],[0.5,"1/2"],[2/3,"2/3"],[0.75,"3/4"]];
+
+function numberToQty(n){
+  if(!(n > 0)) return "0";
+  if(n >= 10) return String(Math.round(n));
+  var whole = Math.floor(n + 1e-9);
+  var rem = n - whole;
+  var best = QTY_FRACTIONS[0], bd = Infinity;
+  QTY_FRACTIONS.forEach(function(f){
+    var d = Math.abs(rem - f[0]);
+    if(d < bd){ bd = d; best = f; }
+  });
+  if(Math.abs(rem - 1) < bd){ whole += 1; best = QTY_FRACTIONS[0]; }
+  if(!best[1]) return String(whole);
+  return whole ? (whole + " " + best[1]) : best[1];
+}
+
+function scaleIngredient(text, k){
+  if(!text || k === 1) return text;
+  if(QTY_NO_SCALE.test(text)) return text;
+  var m = String(text).match(QTY_RE);
+  if(!m) return text;
+
+  var rest = m[4];
+  var word = (rest.split(/\s+/)[0] || "").toLowerCase().replace(/[^a-z]/g, "");
+  var step = QTY_COUNT.test(rest) ? 1 : (QTY_STEP[word] != null ? QTY_STEP[word] : 0.25);
+
+  var n = qtyToNumber(m[2]);
+  if(!(n > 0)) return text;
+
+  var scaled = n * k;
+  scaled = Math.round(scaled / step) * step;
+  if(scaled < step) scaled = step;          /* never scale an item away */
+
+  return m[1] + numberToQty(scaled) + m[3] + rest;
+}
+
+
+/* ── SCALING A PLAN ─────────────────────────────────────────── */
+
+/* Deep enough to be safe: the recipe object and its arrays are shared with
+   MEAL_LIBRARY, and scaling in place would corrupt the library for every
+   later plan. */
+function scaleMeal(meal, k){
+  if(!meal) return meal;
+  var out = Object.assign({}, meal);
+  if(meal.macros){
+    out.macros = {
+      p: Math.max(Math.round(meal.macros.p * k), 1),
+      c: Math.max(Math.round(meal.macros.c * k), 0),
+      f: Math.max(Math.round(meal.macros.f * k), 1)
+    };
+  }
+  if(typeof meal.cost === "number") out.cost = Math.round(meal.cost * k * 100) / 100;
+  if(meal.recipe){
+    out.recipe = Object.assign({}, meal.recipe);
+    if(Array.isArray(meal.recipe.ingredients)){
+      out.recipe.ingredients = meal.recipe.ingredients.map(function(i){
+        return scaleIngredient(i, k);
+      });
+    }
+    if(Array.isArray(meal.recipe.seasonings)) out.recipe.seasonings = meal.recipe.seasonings.slice();
+  }
+  out.scaledBy = Math.round(k * 100) / 100;
+  return out;
+}
+
+/* How far the template has to move to land on the target. Clamped, because
+   past a point the honest answer is "this plan is the wrong shape for you",
+   not "eat four and a half chicken breasts". */
+var PLAN_SCALE_MIN = 0.55, PLAN_SCALE_MAX = 1.9;
+
+function planScaleFactor(base, macros){
+  if(!base || !base.length || !macros || !macros.cal) return 1;
+  var cal = base.reduce(function(a, m){
+    if(!m || !m.macros) return a;
+    return a + m.macros.p * 4 + m.macros.c * 4 + m.macros.f * 9;
+  }, 0);
+  if(!cal) return 1;
+  var k = macros.cal / cal;
+  return Math.max(PLAN_SCALE_MIN, Math.min(PLAN_SCALE_MAX, k));
+}
+
+/* The stored plan is the SCALED one, because everything downstream —
+   the meal cards, eatenToday(), the shopping list, the budget — already
+   reads FF.onboarding.mealPlan and should see real portions. The unscaled
+   picks are kept beside it so rescaling never compounds. */
+function applyPlanScaling(){
+  try{
+    var ob = FF && FF.onboarding;
+    if(!ob) return null;
+
+    /* First run on an existing account: whatever is saved is the base. */
+    if(!ob.mealPlanBase && ob.mealPlan){
+      ob.mealPlanBase = ob.mealPlan.map(function(m){
+        if(!m) return m;
+        var c = Object.assign({}, m);
+        delete c.scaledBy;
+        if(m.recipe) c.recipe = Object.assign({}, m.recipe);
+        return c;
+      });
+    }
+    var base = ob.mealPlanBase;
+    if(!base || !base.length) return null;
+
+    var macros = FF.macros || ob.macros;
+    var k = planScaleFactor(base, macros);
+    ob.mealPlan = base.map(function(m){ return scaleMeal(m, k); });
+    FF.onboarding = ob;
+    return k;
+  }catch(e){ console.warn("applyPlanScaling:", e); return null; }
+}
+
+/* Swapping one meal replaces that slot in the base, then rescales. */
+function setPlanSlot(slot, meal){
+  var ob = FF && FF.onboarding;
+  if(!ob) return;
+  if(!ob.mealPlanBase) applyPlanScaling();
+  if(!ob.mealPlanBase) return;
+  ob.mealPlanBase[slot] = meal;
+  applyPlanScaling();
+}
+
+
+/* ── WIRING ─────────────────────────────────────────────────── */
+
+/* regeneratePlan() builds the picks — that output is the base, not the
+   plan, so wrap it and scale after. */
+if(typeof regeneratePlan === "function" && !regeneratePlan.__scaled){
+  var _regen = regeneratePlan;
+  regeneratePlan = function(){
+    var r = _regen.apply(this, arguments);
+    try{
+      if(FF && FF.onboarding){
+        FF.onboarding.mealPlanBase = FF.onboarding.mealPlan;
+        applyPlanScaling();
+        if(typeof saveState === "function") saveState();
+      }
+    }catch(e){}
+    return r;
+  };
+  regeneratePlan.__scaled = true;
+}
+
+/* A meal swap has to go into the base, or the next rescale throws it away. */
+if(typeof swapMeal === "function" && !swapMeal.__scaled){
+  var _swap = swapMeal;
+  swapMeal = function(ctx, slot, libIndex){
+    var r = _swap.apply(this, arguments);
+    try{
+      if(ctx !== "ob" && FF && FF.onboarding && FF.onboarding.mealPlan){
+        var lib = MEAL_LIBRARY[currentDiet()] || MEAL_LIBRARY.standard;
+        var chosen = lib[parseInt(libIndex, 10)];
+        if(chosen){
+          var excluded = (typeof excludedAllergens === "function") ? excludedAllergens() : [];
+          setPlanSlot(parseInt(slot, 10), Object.assign({}, chosen, {
+            flagged: (chosen.allergens || []).some(function(a){ return excluded.indexOf(a) >= 0; })
+          }));
+          if(typeof saveState === "function") saveState();
+          if(typeof rerenderMeals === "function") rerenderMeals(ctx);
+        }
+      }
+    }catch(e){}
+    return r;
+  };
+  swapMeal.__scaled = true;
+}
+
+/* Targets moved from Body Log — rescale behind it. */
+if(typeof applyBodyweightMacros === "function" && !applyBodyweightMacros.__scaled){
+  var _abm = applyBodyweightMacros;
+  applyBodyweightMacros = function(){
+    var r = _abm.apply(this, arguments);
+    try{
+      applyPlanScaling();
+      if(typeof saveState === "function") saveState();
+      if(typeof _mounted !== "undefined" && _mounted.delete) _mounted.delete("meals");
+      if(typeof rerenderMeals === "function") rerenderMeals();
+    }catch(e){}
+    return r;
+  };
+  applyBodyweightMacros.__scaled = true;
+}
+
+/* Targets moved from a phase switch. rebuildTargetsForPhase is where both
+   routes converge, so the protein correction and the rescale both hang off
+   its return — in one wrapper, so neither runs twice.
+
+   Its no-bodyweight path carried the old 1.08 cut bump on protein. Now that
+   protein is anchored to bodyweight, that path uses the same rule as
+   everywhere else and the bump goes. */
+if(typeof rebuildTargetsForPhase === "function" && !rebuildTargetsForPhase.__scaled){
+  var _rtp = rebuildTargetsForPhase;
+  rebuildTargetsForPhase = function(fromGoal, toGoal){
+    var how = _rtp.apply(this, arguments);
+    try{
+      if(how === "shifted" && FF.macros && FF.macros.cal){
+        var cal = FF.macros.cal;
+        var protein = proteinTargetFor(toGoal, planningWeightLb());
+        var fat = Math.max(Math.round(cal * 0.27 / 9), 40);
+        var carbs = Math.max(Math.round((cal - protein * 4 - fat * 9) / 4), 40);
+        FF.macros = {cal:cal, protein:protein, carbs:carbs, fat:fat,
+                     water:FF.macros.water || "3-4L"};
+        if(FF.onboarding) FF.onboarding.macros = FF.macros;
+      }
+      if(how) applyPlanScaling();
+    }catch(e){}
+    return how;
+  };
+  rebuildTargetsForPhase.__scaled = true;
+}
+
+/* The weekly grocery figure in Setup is summed from the base recipes, so a
+   plan that scales to 130% would quietly cost 30% more than the number the
+   budget slider is being checked against. Recompute it at the real portions.
+
+   buildMealPlan() writes #weekCost itself, so this runs after it and
+   overwrites — including the colour, which is the part that tells someone
+   they are over budget. */
+if(typeof buildMealPlan === "function" && !buildMealPlan.__scaledCost){
+  var _bmp = buildMealPlan;
+  buildMealPlan = function(){
+    var r = _bmp.apply(this, arguments);
+    try{
+      var meals = (typeof S !== "undefined" && S && S.mealPlan) || [];
+      var macros = (typeof calcFinalMacros === "function") ? calcFinalMacros() : null;
+      var el = document.getElementById("weekCost");
+      if(el && meals.length && macros && macros.cal){
+        var k = planScaleFactor(meals, macros);
+        var daily = meals.reduce(function(s, m){ return s + ((m && m.cost) || 0); }, 0) * k;
+        var weekly = daily * 7;
+        var budget = (typeof S !== "undefined" && S && S.budget) || 75;
+        el.textContent = "$" + weekly.toFixed(0);
+        el.style.color = (weekly <= budget) ? "#4CAF72" : "#FF9070";
+      }
+    }catch(e){}
+    return r;
+  };
+  buildMealPlan.__scaledCost = true;
+}
+
+/* Boot: migrate an existing saved plan onto the base/scaled split and
+   bring it in line with whatever the target is now. */
+(function(){
+  function boot(){
+    try{
+      if(!FF || !FF.onboarding) return;
+      var k = applyPlanScaling();
+      if(k !== null && typeof saveState === "function") saveState();
+    }catch(e){ console.warn("plan scaling boot:", e); }
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", function(){ setTimeout(boot, 600); });
+  } else {
+    setTimeout(boot, 600);
+  }
+})();
+
+
+/* ── THE PLAN TOTAL CARD ────────────────────────────────────── */
+
+/* Calories now land by construction, so the note stops talking about a
+   calorie gap that no longer exists and reports the split instead —
+   which is the part a fixed template genuinely cannot always hit. */
+function planTotalsHTML(plan, macros){
+  if(!plan || !plan.length || !macros) return "";
+  var t = plan.reduce(function(a, m){
+    if(!m || !m.macros) return a;
+    a.p += m.macros.p; a.c += m.macros.c; a.f += m.macros.f;
+    return a;
+  }, {p:0, c:0, f:0});
+  t.cal = Math.round(t.p * 4 + t.c * 4 + t.f * 9);
+
+  var target = macros.cal || 0;
+  var pct = target ? Math.round(t.cal / target * 100) : 100;
+  var off = target ? t.cal - target : 0;
+
+  var pGap = (macros.protein || 0) ? t.p - macros.protein : 0;
+  var cGap = (macros.carbs   || 0) ? t.c - macros.carbs   : 0;
+
+  var calOk = Math.abs(pct - 100) <= 8;
+  var splitOk = Math.abs(pGap) <= Math.max(20, macros.protein * 0.15);
+
+  var tone = (calOk && splitOk) ? "#4CAF72" : calOk ? "#F59E0B" : "#FF9070";
+
+  var note;
+  if(!calOk){
+    note = off < 0
+      ? "These portions are as small as this plan goes — " + Math.abs(off).toLocaleString() +
+        " cal under. Add a meal in Settings, or use the scanner to log the difference."
+      : "These portions are as large as this plan goes — " + off.toLocaleString() +
+        " cal over. Drop a meal in Settings, or pick lighter meals.";
+  } else if(splitOk){
+    note = "Portions are matched to your target.";
+  } else if(pGap > 0){
+    /* Not a fault to fix silently. These meals are protein-dense, and the
+       honest thing is to say so and point at the lever, rather than distort
+       the recipes until the arithmetic agrees. */
+    note = "Calories match. This plan runs " + Math.abs(pGap) + "g over your protein " +
+           "target because these meals are protein-dense — that is fine. For a closer " +
+           "match, change your diet style in Settings.";
+  } else {
+    note = "Calories match, but protein lands " + Math.abs(pGap) +
+           "g short. Swap a snack for a shake, or pick a higher-protein meal.";
+  }
+
+  var scaleNote = "";
+  var k = plan[0] && plan[0].scaledBy;
+  if(k && Math.abs(k - 1) > 0.04){
+    scaleNote = '<div class="plan-totals-note" style="opacity:.75;margin-top:4px;">' +
+      'Every portion below is scaled to ' + Math.round(k * 100) + '% of the base recipe.' +
+      '</div>';
+  }
+
+  return '' +
+  '<div class="plan-totals" style="border-color:' + tone + '33;background:' + tone + '0D;">' +
+    '<div class="plan-totals-head">' +
+      '<span class="plan-totals-label">Plan total</span>' +
+      '<span class="plan-totals-val" style="color:' + tone + ';">' + t.cal.toLocaleString() + ' kcal · ' + pct + '% of target</span>' +
+    '</div>' +
+    '<div class="plan-totals-macros">' +
+      '<span>P ' + t.p + 'g</span><span>C ' + t.c + 'g</span><span>F ' + t.f + 'g</span>' +
+    '</div>' +
+    '<div class="plan-totals-note">' + note + '</div>' +
+    scaleNote +
+  '</div>';
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   WHICH BUILD AM I LOOKING AT?
+
+   Bobby pushed a fix, hard-reloaded, and saw the old behaviour. The only
+   way either of us could tell which version was actually running was to
+   recognise a sentence that had been reworded. That is a bad way to debug
+   a service-worker-cached app, and it will happen again every time a
+   deploy half-lands.
+
+   So the build says its own name, in three places:
+     · the foot of How It Works, where a person can read it
+     · FF_BUILD, for a one-line check in the console
+     · a console line on every boot
+═══════════════════════════════════════════════════════════════ */
+
+var FF_BUILD = "v15";
+var FF_BUILD_DATE = "2026-09-15";
+
+try{
+  console.log("%cFormFuel " + FF_BUILD + " · " + FF_BUILD_DATE,
+              "color:#B8924A;font-weight:700");
+}catch(e){}
+
+/* Foot of the How It Works page. It is the reference page, so the version
+   of the thing being referenced belongs on it. */
+if(typeof buildGuideSection === "function" && !buildGuideSection.__stamped){
+  var _bgs = buildGuideSection;
+  buildGuideSection = function(el){
+    var r = _bgs.apply(this, arguments);
+    try{
+      if(el && !el.querySelector(".ff-buildstamp")){
+        var page = el.querySelector(".page") || el;
+        var d = document.createElement("div");
+        d.className = "ff-buildstamp";
+        d.textContent = "FormFuel " + FF_BUILD + " · " + FF_BUILD_DATE;
+        page.appendChild(d);
+      }
+    }catch(e){}
+    return r;
+  };
+  buildGuideSection.__stamped = true;
+}
+
+/* A stale service worker is the usual reason a deploy looks like it did not
+   land. If the page is being served by a worker whose cache name does not
+   match this build, say so out loud rather than letting it look like the
+   fix failed. */
+(function(){
+  function check(){
+    try{
+      if(!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+      var chan = new MessageChannel();
+      chan.port1.onmessage = function(ev){
+        var name = ev.data && ev.data.cache;
+        if(name && name.indexOf(FF_BUILD) === -1){
+          console.warn("FormFuel: page is " + FF_BUILD +
+                       " but the service worker cache is '" + name +
+                       "'. Close every tab on this site and reopen it.");
+        }
+      };
+      navigator.serviceWorker.controller.postMessage({q:"cache"}, [chan.port2]);
+    }catch(e){}
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", function(){ setTimeout(check, 1500); });
+  } else { setTimeout(check, 1500); }
+})();
 
 </script>
 </body>
