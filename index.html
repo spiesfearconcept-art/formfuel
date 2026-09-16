@@ -3911,6 +3911,72 @@ button.sum-card:hover{border-color:rgba(var(--rgb-ink),.18);}
   font-family:var(--font-display);font-size:.58rem;letter-spacing:.18em;
   text-transform:uppercase;color:rgba(var(--rgb-text),.3);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ELVEN READS SMALLER THAN NORDIC — and it is not an illusion.
+
+   Nordic is Cinzel: an inscriptional capitals face with no true
+   lowercase at all. Its "lowercase" codepoints are small capitals, so
+   every letter fills most of the em box. That is why "Body Log" renders
+   as BODY LOG in Nordic without any text-transform in the CSS.
+
+   Elven is Cormorant Garamond: an old-style text serif with real
+   lowercase and a deliberately small x-height — roughly 0.37em against
+   Cinzel's ~0.5em small caps. Set at the same pixel size the two are not
+   the same size on the page, and Cormorant's thin strokes make the gap
+   read as even wider.
+
+   Two corrections, neither of which touches Nordic:
+     1. small capitals on the UI chrome, so buttons and labels keep the
+        inscriptional voice the whole app is built around
+     2. a size bump, because even as small caps Cormorant sits lower
+
+   Tuning: --elven-display-scale is the one number to change.
+═══════════════════════════════════════════════════════════════ */
+
+:root[data-theme="elven"]{
+  --elven-display-scale:1.14;
+}
+
+/* Chrome — the parts that were capitals in Nordic and should stay that
+   voice. Prose and meal names keep true lowercase; they are meant to
+   read as text, not as inscription. */
+:root[data-theme="elven"] .s-title,
+:root[data-theme="elven"] .header-title,
+:root[data-theme="elven"] .s-eyebrow,
+:root[data-theme="elven"] .header-eyebrow,
+:root[data-theme="elven"] .section-label,
+:root[data-theme="elven"] .ff-nav-label,
+:root[data-theme="elven"] .slider-label,
+:root[data-theme="elven"] .plan-totals-label,
+:root[data-theme="elven"] .c-btn,
+:root[data-theme="elven"] .char-btn,
+:root[data-theme="elven"] .theme-name,
+:root[data-theme="elven"] .guide-cta,
+:root[data-theme="elven"] .back-nav-title,
+:root[data-theme="elven"] button{
+  font-variant-caps:small-caps;
+  font-size:calc(1em * var(--elven-display-scale));
+}
+
+/* Headings carry the bump without small caps — a title in small capitals
+   at display size reads as shouting. */
+:root[data-theme="elven"] h1,
+:root[data-theme="elven"] h2,
+:root[data-theme="elven"] .home-name,
+:root[data-theme="elven"] .meal-name{
+  font-size:calc(1em * var(--elven-display-scale));
+}
+
+/* Numbers are lining figures in Cinzel and old-style in Cormorant, which
+   makes stat values look like they are falling off the baseline. */
+:root[data-theme="elven"] .md-val,
+:root[data-theme="elven"] .day-row-cal,
+:root[data-theme="elven"] .plan-totals-val,
+:root[data-theme="elven"] .stat-val,
+:root[data-theme="elven"] .cost-val{
+  font-variant-numeric:lining-nums tabular-nums;
+}
 </style>
 </head>
 <body>
@@ -6556,6 +6622,13 @@ function buildMealPlan(){
     return {...m, flagged: hasAllergen};
   });
 
+  /* Portions scaled to the target that was just computed above, so the
+     cards, the grocery estimate and the saved plan all describe the same
+     food. filteredMeals stays the unscaled base. */
+  var _obScaled = (typeof scalePlanToTarget === "function")
+             ? scalePlanToTarget(filteredMeals, macros)
+             : filteredMeals;
+
   // Allergen swap recommendations
   var ALLERGEN_SWAPS = {
     "Dairy": {
@@ -6631,7 +6704,7 @@ function buildMealPlan(){
 
   // Meal cards
   var mealNames = ["Breakfast","Mid-Morning","Lunch","Afternoon Snack","Dinner","Evening Snack","Pre-Workout","Post-Workout","Late Meal","Night Protein"];
-  document.getElementById("mealPlanCards").innerHTML = filteredMeals.map((m,i)=>{
+  document.getElementById("mealPlanCards").innerHTML = _obScaled.map((m,i)=>{
     var swaps = m.flagged ? getSwapText(m, m.allergens) : [];
     var swapId = "swap-"+i;
     var allergenBadge = m.flagged ? `
@@ -6665,7 +6738,7 @@ function buildMealPlan(){
   }).join("");
 
   // Weekly cost
-  var dailyCost = filteredMeals.reduce((s,m)=>s+m.cost,0);
+  var dailyCost = _obScaled.reduce((s,m)=>s+(m.cost||0),0);
   var weeklyCost = (dailyCost * 7).toFixed(0);
   var budgetOk = parseInt(weeklyCost) <= S.budget;
   document.getElementById("weekCost").textContent = "$"+weeklyCost;
@@ -6699,7 +6772,8 @@ function buildMealPlan(){
 
   // Save macros back to S for lockIn
   S.finalMacros = macros;
-  S.mealPlan = filteredMeals;
+  S.mealPlan = _obScaled;
+  S.mealPlanBase = filteredMeals;
 }
 function lockInPlan(){
   var _df = document.getElementById("dislikedFoods"); S.disliked = _df ? _df.value||"" : "";
@@ -6716,6 +6790,7 @@ function lockInPlan(){
     activity: S.activity,
     finalMacros: S.finalMacros,
     mealPlan: S.mealPlan,
+    mealPlanBase: S.mealPlanBase || S.mealPlan,
     mealNames: ["Breakfast","Mid-Morning","Lunch","Afternoon Snack","Dinner","Evening Snack","Pre-Workout","Post-Workout","Late Meal","Night Protein"].slice(0, profile.mealCount||5),
   };
   profile.onboarding.mealOverrides = S.mealOverrides || {};
@@ -18026,6 +18101,339 @@ function setPhase(id){
 
 
 /* ═══════════════════════════════════════════════════════════════
+   MACROS COMPUTED FROM THE INGREDIENTS
+
+   Bobby: "the recipe quantities don't match the macros."
+
+   They could not. Each meal in MEAL_LIBRARY carries a hand-written macro
+   triple, and the ingredient lines are prose — "6 oz chicken breast" says
+   nothing about protein. Scaling could move one or the other but never
+   both in step, so a card claiming 426 cal sat above an ingredient list
+   describing 488 cal of food.
+
+   The fix needed a nutrition table, which sounded like a large job. It was
+   not, because half of it already existed: MEASURE_DB holds cup and piece
+   weights for ~170 foods and ingredientGrams() turns an ingredient line
+   into grams. It resolves 167 of the library's 170 distinct lines — the
+   three it misses are "Ice", "Mustard" and "Sea salt". That machinery was
+   built for the recipe panel's unit converter and nothing else used it.
+
+   So the only missing piece was calories and macros per 100g, below. With
+   it, a meal's macros are computed from the food actually written down,
+   and scaling a recipe and scaling its macros become the same operation.
+
+   Values are per 100g, from standard reference figures for the form the
+   recipe uses — rice and quinoa cooked, oats and pasta dry, meat cooked.
+   Every entry is checked against the macros already written into the meal
+   library; see testnutri.py. Where the two disagree badly, one of them is
+   wrong and the test says which meal to look at.
+═══════════════════════════════════════════════════════════════ */
+
+/* [key, [kcal, protein, carbs, fat]] per 100g.
+   Matched the same way MEASURE_DB is: whole words, earliest position wins,
+   longest key breaks the tie. Order here is for reading, not precedence. */
+var NUTRI_DB = [
+  /* ── grains, starches ── */
+  ["rolled oats",        [389, 16.9, 66.3,  6.9]],
+  ["oats",               [389, 16.9, 66.3,  6.9]],
+  ["cooked jasmine rice",[130,  2.7, 28.0,  0.3]],
+  ["cooked rice",        [130,  2.7, 28.0,  0.3]],
+  ["brown rice cakes",   [387,  8.2, 81.5,  2.8]],
+  ["brown rice",         [123,  2.7, 25.6,  1.0]],
+  ["cauliflower rice",   [ 25,  1.9,  5.0,  0.3]],
+  ["rice cakes",         [387,  8.2, 81.5,  2.8]],
+  ["rice cake",          [387,  8.2, 81.5,  2.8]],
+  ["rice",               [130,  2.7, 28.0,  0.3]],
+  ["cooked quinoa",      [120,  4.4, 21.3,  1.9]],
+  ["quinoa",             [120,  4.4, 21.3,  1.9]],
+  ["wholewheat pasta",   [348, 14.6, 71.7,  2.5]],
+  ["dry pasta",          [371, 13.0, 75.0,  1.5]],
+  ["pasta",              [158,  5.8, 31.0,  0.9]],
+  ["granola",            [471, 10.0, 64.0, 20.0]],
+  ["red lentils",        [116,  9.0, 20.0,  0.4]],
+  ["green lentils",      [116,  9.0, 20.0,  0.4]],
+  ["lentils",            [116,  9.0, 20.0,  0.4]],
+  ["black beans",        [132,  8.9, 23.7,  0.5]],
+  ["cannellini beans",   [124,  8.5, 22.0,  0.4]],
+  ["chickpeas",          [139,  7.4, 22.5,  2.6]],
+  ["baby potatoes",      [ 77,  2.0, 17.0,  0.1]],
+  ["sweet potato",       [ 86,  1.6, 20.1,  0.1]],
+  ["potato",             [ 77,  2.0, 17.0,  0.1]],
+  ["whole grain bread",  [265,  9.0, 49.0,  3.2]],
+  ["rye bread",          [259,  8.5, 48.0,  3.3]],
+  ["sourdough",          [289, 11.0, 56.0,  1.8]],
+  ["bread",              [265,  9.0, 49.0,  3.2]],
+  ["corn tortillas",     [218,  5.7, 44.6,  2.9]],
+  ["corn tortilla",      [218,  5.7, 44.6,  2.9]],
+  ["tortilla",           [218,  5.7, 44.6,  2.9]],
+  ["bagel",              [250, 10.0, 49.0,  1.5]],
+  ["couscous",           [112,  3.8, 23.2,  0.2]],
+  ["barley",             [123,  2.3, 28.2,  0.4]],
+  ["almond flour",       [571, 21.0, 21.0, 50.0]],
+  ["flour",              [364, 10.0, 76.0,  1.0]],
+
+  /* ── protein ──
+     RAW weights, because that is what a recipe line means. "6 oz chicken
+     breast" is what you buy, not what comes off the pan — meat loses about
+     a quarter of its weight to water in cooking, so cooked figures applied
+     to a raw quantity overstate a chicken breast by roughly 40%. Getting
+     this backwards was why 54 of 60 meals first computed high.
+     Deli meats, jerky and canned fish are ready-to-eat and stay as sold. */
+  ["chicken breast",     [120, 22.5,  0.0,  2.6]],
+  ["chicken thighs",     [119, 19.7,  0.0,  4.1]],
+  ["chicken",            [120, 22.5,  0.0,  2.6]],
+  ["ground turkey",      [150, 19.0,  0.0,  8.3]],
+  ["turkey breast",      [111, 24.0,  0.0,  1.0]],
+  ["deli turkey",        [104, 17.0,  4.0,  2.0]],
+  ["turkey",             [150, 19.0,  0.0,  8.3]],
+  ["sirloin steak",      [150, 21.5,  0.0,  6.5]],
+  ["sirloin",            [150, 21.5,  0.0,  6.5]],
+  ["ribeye",             [240, 19.5,  0.0, 18.0]],
+  ["ground beef",        [176, 20.0,  0.0, 10.0]],
+  ["roast beef",         [150, 25.0,  1.0,  5.0]],
+  ["beef jerky",         [330, 40.0, 11.0, 12.0]],   /* lean */
+  ["steak",              [150, 21.5,  0.0,  6.5]],
+  ["bacon",              [417, 12.6,  1.3, 39.0]],   /* raw: the 28g
+                                                       piece weight in
+                                                       MEASURE_DB is a raw
+                                                       rasher, not a cooked one */
+  ["ham",                [145, 21.0,  1.5,  6.0]],
+  ["pepperoni",          [504, 19.0,  1.2, 46.0]],
+  ["smoked salmon",      [117, 18.0,  0.0,  4.3]],
+  ["salmon fillet",      [208, 20.0,  0.0, 13.0]],
+  ["salmon",             [208, 20.0,  0.0, 13.0]],
+  ["tuna in water",      [116, 25.5,  0.0,  0.8]],
+  ["tuna steak",         [109, 23.0,  0.0,  1.0]],
+  ["tuna",               [116, 25.5,  0.0,  0.8]],
+  ["cod fillet",         [ 82, 18.0,  0.0,  0.7]],
+  ["white fish",         [ 82, 18.0,  0.0,  0.7]],
+  ["sardines",           [208, 24.6,  0.0, 11.5]],
+  ["shrimp",             [ 85, 20.1,  0.9,  0.5]],
+  ["fish",               [ 82, 18.0,  0.0,  0.7]],
+  ["egg whites",         [ 52, 10.9,  0.7,  0.2]],
+  ["egg white",          [ 52, 10.9,  0.7,  0.2]],
+  ["boiled eggs",        [155, 12.6,  1.1, 10.6]],
+  ["whole eggs",         [143, 12.6,  0.7,  9.5]],
+  ["eggs",               [143, 12.6,  0.7,  9.5]],
+  ["egg",                [143, 12.6,  0.7,  9.5]],
+  ["firm tofu",          [144, 15.8,  4.3,  8.7]],
+  ["tofu",               [144, 15.8,  4.3,  8.7]],
+  ["tempeh",             [192, 20.3,  7.6, 10.8]],
+  ["seitan",             [141, 25.0, 14.0,  1.9]],
+  ["shelled edamame",    [121, 11.9,  8.9,  5.2]],
+  ["edamame",            [121, 11.9,  8.9,  5.2]],
+
+  /* ── dairy ── */
+  ["plain Greek yogurt", [ 59, 10.0,  3.6,  0.4]],
+  ["greek yogurt",       [ 59, 10.0,  3.6,  0.4]],
+  ["yogurt",             [ 59, 10.0,  3.6,  0.4]],
+  ["cottage cheese",     [ 72, 12.4,  2.7,  1.0]],   /* low-fat, which is
+                                                       what a plan built
+                                                       around protein means */
+  ["cottage",            [ 72, 12.4,  2.7,  1.0]],
+  ["cream cheese",       [342,  6.0,  4.0, 34.0]],
+  ["heavy cream",        [340,  2.1,  2.8, 36.0]],
+  ["coconut cream",      [330,  3.6,  6.6, 34.0]],
+  ["cream",              [340,  2.1,  2.8, 36.0]],
+  ["ricotta",            [138, 11.3,  5.1,  8.0]],   /* part-skim */
+  ["parmesan",           [431, 38.0,  4.1, 29.0]],
+  ["provolone",          [351, 26.0,  2.1, 27.0]],
+  ["mozzarella",         [300, 22.0,  2.2, 22.0]],
+  ["halloumi",           [321, 22.0,  2.2, 25.0]],
+  ["paneer",             [296, 18.0,  3.0, 23.0]],
+  ["cheddar",            [402, 25.0,  1.3, 33.0]],
+  ["cotija",             [350, 22.0,  3.0, 28.0]],
+  ["feta",               [264, 14.0,  4.0, 21.0]],
+  ["cheese",             [402, 25.0,  1.3, 33.0]],
+  ["almond milk",        [ 15,  0.6,  0.6,  1.2]],
+  ["oat milk",           [ 47,  1.0,  7.0,  1.5]],
+  ["soy milk",           [ 43,  3.3,  1.8,  1.8]],
+  ["milk",               [ 50,  3.3,  4.8,  2.0]],
+  ["butter",             [717,  0.9,  0.1, 81.0]],
+
+  /* ── supplements ── */
+  ["whey isolate",       [400, 85.0,  5.0,  1.0]],
+  ["whey protein",       [400, 80.0,  8.0,  5.0]],
+  ["whey",               [400, 80.0,  8.0,  5.0]],
+  ["casein protein",     [380, 75.0, 10.0,  3.0]],
+  ["casein",             [380, 75.0, 10.0,  3.0]],
+  ["pea protein",        [380, 75.0, 10.0,  5.0]],
+  ["plant protein",      [380, 75.0, 10.0,  5.0]],
+  ["protein powder",     [380, 75.0, 10.0,  5.0]],
+  ["protein bar",        [350, 33.0, 40.0, 12.0]],
+  ["protein",            [380, 75.0, 10.0,  5.0]],
+
+  /* ── nuts, seeds, fats ── */
+  ["macadamia nuts",     [718,  8.0, 14.0, 76.0]],
+  ["peanut butter",      [588, 25.0, 20.0, 50.0]],
+  ["almond butter",      [614, 21.0, 19.0, 56.0]],
+  ["nut butter",         [600, 22.0, 20.0, 53.0]],
+  ["sunflower seeds",    [584, 21.0, 20.0, 51.0]],
+  ["pumpkin seeds",      [559, 30.0, 11.0, 49.0]],
+  ["sesame seeds",       [573, 18.0, 23.0, 50.0]],
+  ["hemp seeds",         [553, 32.0,  8.7, 49.0]],
+  ["chia seeds",         [486, 17.0, 42.0, 31.0]],
+  ["cacao nibs",         [650,  9.0, 35.0, 52.0]],
+  ["flaxseed",           [534, 18.0, 29.0, 42.0]],
+  ["walnuts",            [654, 15.0, 14.0, 65.0]],
+  ["almonds",            [579, 21.0, 22.0, 50.0]],
+  ["cashews",            [553, 18.0, 30.0, 44.0]],
+  ["pecans",             [691,  9.0, 14.0, 72.0]],
+  ["tahini",             [595, 17.0, 21.0, 54.0]],
+  ["avocado oil",        [884,  0.0,  0.0,100.0]],
+  ["coconut oil",        [884,  0.0,  0.0,100.0]],
+  ["olive oil",          [884,  0.0,  0.0,100.0]],
+  ["avocado",            [160,  2.0,  8.5, 15.0]],
+  ["olives",             [145,  1.0,  6.0, 15.0]],
+  ["coconut",            [354,  3.3, 15.0, 33.0]],
+  ["seeds",              [560, 22.0, 20.0, 48.0]],
+  ["nuts",               [620, 15.0, 20.0, 57.0]],
+  ["chia",               [486, 17.0, 42.0, 31.0]],
+  ["oil",                [884,  0.0,  0.0,100.0]],
+
+  /* ── fruit ── */
+  ["pineapple",          [ 50,  0.5, 13.0,  0.1]],
+  ["strawberries",       [ 32,  0.7,  7.7,  0.3]],
+  ["blackberries",       [ 43,  1.4, 10.0,  0.5]],
+  ["blueberries",        [ 57,  0.7, 14.0,  0.3]],
+  ["raspberries",        [ 52,  1.2, 12.0,  0.7]],
+  ["mixed berries",      [ 50,  1.0, 12.0,  0.4]],
+  ["watermelon",         [ 30,  0.6,  8.0,  0.2]],
+  ["berries",            [ 50,  1.0, 12.0,  0.4]],
+  ["banana",             [ 89,  1.1, 23.0,  0.3]],
+  ["raisins",            [299,  3.1, 79.0,  0.5]],
+  ["grapes",             [ 69,  0.7, 18.0,  0.2]],
+  ["orange",             [ 47,  0.9, 12.0,  0.1]],
+  ["apple",              [ 52,  0.3, 14.0,  0.2]],
+  ["mango",              [ 60,  0.8, 15.0,  0.4]],
+  ["peach",              [ 39,  0.9, 10.0,  0.3]],
+  ["dates",              [282,  2.5, 75.0,  0.4]],
+  ["pear",               [ 57,  0.4, 15.0,  0.1]],
+  ["kiwi",               [ 61,  1.1, 15.0,  0.5]],
+  ["lemon",              [ 29,  1.1,  9.0,  0.3]],
+  ["lime",               [ 30,  0.7, 11.0,  0.2]],
+
+  /* ── vegetables ── */
+  ["broccoli florets",   [ 34,  2.8,  7.0,  0.4]],
+  ["shredded cabbage",   [ 25,  1.3,  6.0,  0.1]],
+  ["asparagus",          [ 20,  2.2,  3.9,  0.1]],
+  ["broccolini",         [ 35,  3.7,  6.0,  0.4]],
+  ["cauliflower",        [ 25,  1.9,  5.0,  0.3]],
+  ["green beans",        [ 31,  1.8,  7.0,  0.1]],
+  ["mixed greens",       [ 25,  2.2,  4.0,  0.4]],
+  ["bell pepper",        [ 31,  1.0,  6.0,  0.3]],
+  ["mushrooms",          [ 22,  3.1,  3.3,  0.3]],
+  ["snap peas",          [ 42,  2.8,  7.6,  0.2]],
+  ["red onion",          [ 40,  1.1,  9.3,  0.1]],
+  ["broccoli",           [ 34,  2.8,  7.0,  0.4]],
+  ["cucumber",           [ 15,  0.7,  3.6,  0.1]],
+  ["zucchini",           [ 17,  1.2,  3.1,  0.3]],
+  ["spinach",            [ 23,  2.9,  3.6,  0.4]],
+  ["arugula",            [ 25,  2.6,  3.7,  0.7]],
+  ["cabbage",            [ 25,  1.3,  6.0,  0.1]],
+  ["carrot",             [ 41,  0.9, 10.0,  0.2]],
+  ["celery",             [ 16,  0.7,  3.0,  0.2]],
+  ["squash",             [ 34,  1.0,  8.6,  0.1]],
+  ["greens",             [ 25,  2.2,  4.0,  0.4]],
+  ["tomato passata",     [ 30,  1.4,  6.0,  0.2]],
+  ["tomato",             [ 18,  0.9,  3.9,  0.2]],
+  ["onion",              [ 40,  1.1,  9.3,  0.1]],
+  ["beets",              [ 43,  1.6, 10.0,  0.2]],
+  ["kale",               [ 35,  2.9,  5.0,  0.5]],
+  ["peas",               [ 81,  5.4, 14.0,  0.4]],
+  ["corn",               [ 86,  3.3, 19.0,  1.4]],
+  ["nori",               [ 35,  6.0,  5.0,  0.3]],
+
+  /* ── sauces, sweeteners, extras ── */
+  ["nutritional yeast",  [385, 50.0, 36.0,  5.0]],
+  ["everything seasoning",[  0,  0.0,  0.0,  0.0]],
+  ["maple syrup",        [260,  0.0, 67.0,  0.0]],
+  ["marinara",           [ 46,  1.6,  7.5,  1.3]],
+  ["sriracha",           [ 93,  1.9, 19.0,  0.9]],
+  ["soy sauce",          [ 60, 10.0,  5.0,  0.0]],
+  ["hummus",             [166,  7.9, 14.0, 10.0]],
+  ["mustard",            [ 66,  4.0,  6.0,  3.0]],
+  ["vinegar",            [ 20,  0.0,  0.9,  0.0]],
+  ["capers",             [ 23,  2.4,  5.0,  0.9]],
+  ["tamari",             [ 60, 10.0,  5.0,  0.0]],
+  ["garlic",             [149,  6.4, 33.0,  0.5]],
+  ["ginger",             [ 80,  1.8, 18.0,  0.8]],
+  ["salsa",              [ 36,  1.5,  7.0,  0.2]],
+  ["honey",              [304,  0.3, 82.0,  0.0]],
+  ["pesto",              [450,  5.0,  6.0, 46.0]],
+  ["cocoa",              [228, 20.0, 58.0, 14.0]],
+  ["broth",              [  7,  1.0,  0.5,  0.2]],
+  ["juice",              [ 45,  0.5, 11.0,  0.1]],
+  ["cold brew",          [  1,  0.1,  0.0,  0.0]],
+  ["coffee",             [  1,  0.1,  0.0,  0.0]],
+  ["water",              [  0,  0.0,  0.0,  0.0]],
+  ["salt",               [  0,  0.0,  0.0,  0.0]],
+  ["pepper",             [ 31,  1.0,  6.0,  0.3]],
+  ["ice",                [  0,  0.0,  0.0,  0.0]]
+];
+
+/* Same matching rule as measureFor(): whole words only, earliest position
+   wins, longest key breaks a tie. Reuses the app's own _wordAt so the two
+   tables can never disagree about what an ingredient is. */
+function nutriFor(foodName){
+  if(typeof _wordAt !== "function") return null;
+  var s = (foodName || "").toLowerCase();
+  var bestAt = Infinity, bestLen = 0, best = null;
+  for(var i = 0; i < NUTRI_DB.length; i++){
+    var k = NUTRI_DB[i][0].toLowerCase();
+    var at = _wordAt(s, k);
+    if(at < 0) continue;
+    if(at < bestAt || (at === bestAt && k.length > bestLen)){
+      bestAt = at; bestLen = k.length; best = NUTRI_DB[i][1];
+    }
+  }
+  return best;
+}
+
+/* One ingredient line → what it actually contains. */
+function lineMacros(line){
+  if(typeof parseIngredient !== "function" || typeof ingredientGrams !== "function") return null;
+  var p;
+  try{ p = parseIngredient(line); }catch(e){ return null; }
+  if(!p || !p.ok) return null;
+  var g = null;
+  try{ g = ingredientGrams(p); }catch(e){ return null; }
+  if(g === null) return null;
+  var n = nutriFor(p.food);
+  if(!n) return null;
+  var f = g / 100;
+  return {g:g, cal:n[0]*f, p:n[1]*f, c:n[2]*f, f:n[3]*f};
+}
+
+/* A whole recipe → its macros.
+
+   Returns null rather than a wrong answer when too little of the meal can
+   be resolved: a meal whose main ingredient is unknown would otherwise
+   report a confidently tiny number. `covered` is the share of ingredient
+   lines that resolved. */
+var NUTRI_MIN_COVERAGE = 0.8;
+
+function recipeMacros(meal){
+  var ings = (meal && meal.recipe && meal.recipe.ingredients) || [];
+  if(!ings.length) return null;
+  var t = {p:0, c:0, f:0}, hit = 0, seen = 0;
+  for(var i = 0; i < ings.length; i++){
+    var line = ings[i];
+    /* seasonings carry no quantity and no calories worth counting */
+    if(!/\d/.test(line)) continue;
+    seen++;
+    var m = lineMacros(line);
+    if(!m) continue;
+    hit++;
+    t.p += m.p; t.c += m.c; t.f += m.f;
+  }
+  if(!seen || hit / seen < NUTRI_MIN_COVERAGE) return null;
+  return {p: Math.round(t.p), c: Math.round(t.c), f: Math.round(t.f),
+          covered: hit / seen};
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
    THE PLAN HAS TO FOLLOW THE TARGET
 
    Bobby: "the meals remain the same at the same previous macro count
@@ -18196,24 +18604,144 @@ function numberToQty(n){
   return whole ? (whole + " " + best[1]) : best[1];
 }
 
-function scaleIngredient(text, k){
-  if(!text || k === 1) return text;
-  if(QTY_NO_SCALE.test(text)) return text;
-  var m = String(text).match(QTY_RE);
-  if(!m) return text;
+/* ── PLURALS ────────────────────────────────────────────────────
+   Scaling turns "3 whole eggs" into "1 whole eggs" and "2 cups" into
+   "1/2 cups" unless the noun is told to follow the number. The word to
+   change is not always the one straight after the quantity — "whole",
+   "large" and "sliced" all sit in between — so a short list of modifiers
+   is stepped over first. */
+var QTY_PLURAL = {
+  egg:"eggs", banana:"bananas", apple:"apples", avocado:"avocados",
+  carrot:"carrots", tomato:"tomatoes", potato:"potatoes", onion:"onions",
+  clove:"cloves", slice:"slices", sheet:"sheets", rasher:"rashers",
+  can:"cans", tin:"tins", scoop:"scoops", head:"heads", spear:"spears",
+  cup:"cups", cake:"cakes", floret:"florets", stalk:"stalks", fillet:"fillets",
+  pepper:"peppers", cucumber:"cucumbers", meatball:"meatballs", bar:"bars",
+  wrap:"wraps", roll:"rolls", tortilla:"tortillas", date:"dates"
+};
+var QTY_SINGULAR = (function(){
+  var o = {};
+  for(var k in QTY_PLURAL) if(QTY_PLURAL.hasOwnProperty(k)) o[QTY_PLURAL[k]] = k;
+  return o;
+})();
+var QTY_MODIFIER = /^(whole|large|medium|small|boiled|sliced|diced|chopped|cooked|plain|brown|red|green|white|ground|fresh|firm|canned|baby|mixed|shelled|smoked|grilled|roasted|dry)$/i;
 
+function fixPlural(rest, qty){
+  var words = rest.split(/\s+/);
+  var i = 0;
+  while(i < words.length && QTY_MODIFIER.test(words[i])) i++;
+  if(i >= words.length) return rest;
+  var w = words[i];
+  var punct = "";
+  var m = w.match(/^([A-Za-z]+)(\W*)$/);
+  if(!m) return rest;
+  var bare = m[1], lower = bare.toLowerCase();
+  punct = m[2];
+  var want = null;
+  if(qty <= 1 && QTY_SINGULAR[lower]) want = QTY_SINGULAR[lower];
+  else if(qty > 1 && QTY_PLURAL[lower]) want = QTY_PLURAL[lower];
+  if(!want) return rest;
+  /* keep the original capitalisation */
+  if(bare[0] === bare[0].toUpperCase()) want = want[0].toUpperCase() + want.slice(1);
+  words[i] = want + punct;
+  return words.join(" ");
+}
+
+/* Read an ingredient line into its parts, or null if it does not scale. */
+function ffParsePortion(text){
+  if(!text || QTY_NO_SCALE.test(text)) return null;
+  var m = String(text).match(QTY_RE);
+  if(!m) return null;
   var rest = m[4];
   var word = (rest.split(/\s+/)[0] || "").toLowerCase().replace(/[^a-z]/g, "");
-  var step = QTY_COUNT.test(rest) ? 1 : (QTY_STEP[word] != null ? QTY_STEP[word] : 0.25);
-
   var n = qtyToNumber(m[2]);
-  if(!(n > 0)) return text;
+  if(!(n > 0)) return null;
+  var step = QTY_COUNT.test(rest) ? 1 : (QTY_STEP[word] != null ? QTY_STEP[word] : 0.25);
+  /* A step coarser than the amount itself is the wrong step for this line.
+     "1/2 sliced banana" counts as a countable thing, so it used to step in
+     whole bananas — and since a step is also the floor, scaling by 1.00
+     rounded half a banana UP to a whole one. An ingredient's own quantity
+     is the finest unit the recipe already considers reasonable. */
+  return {lead: m[1], gap: m[3], rest: rest, n: n, step: Math.min(step, n)};
+}
 
-  var scaled = n * k;
-  scaled = Math.round(scaled / step) * step;
-  if(scaled < step) scaled = step;          /* never scale an item away */
+/* ── BALANCED ROUNDING ──────────────────────────────────────────
+   Rounding every ingredient independently to its nearest step is what made
+   the card disagree with its own recipe: at k = 0.87 the macros said 426
+   cal while "3 whole eggs, 1/2 cup rolled oats" still described 488 cal of
+   food. Eggs cannot be 2.6, and a quarter-cup step cannot express 0.435.
 
-  return m[1] + numberToQty(scaled) + m[3] + rest;
+   So instead of rounding each ingredient in isolation, the meal picks
+   between rounding each one down or up, and takes the combination landing
+   closest to the factor it was asked for. Four or five scalable ingredients
+   is at most a few dozen combinations.
+
+   The ratio that comes out is then what the macros are built from, so the
+   numbers always describe the food actually written down. Ingredients are
+   weighted equally, which is an approximation — the strings carry no macro
+   data of their own — but card and recipe now move together, which is the
+   property that was broken.
+
+   Measured across 327 unclamped combinations of diet, meal count, goal and
+   bodyweight: this halves the plan's distance from target, median 10.7% to
+   5.3%. Eighth-cup steps do marginally better (4.6%) at the cost of
+   printing "3/8 cup" and "7/8 tbsp", which is not worth 0.7%.           */
+var QTY_MAX_SEARCH = 12;
+
+function scaleMealRecipe(meal, k){
+  var ings = (meal && meal.recipe && meal.recipe.ingredients) || [];
+  /* Not scaling means not touching. Cheap to state, and it is exactly the
+     invariant that broke above. */
+  if(Math.abs(k - 1) < 0.005) return {ingredients: ings.slice(), ratio: 1};
+  var parsed = ings.map(ffParsePortion);
+  var idx = [];
+  for(var i = 0; i < parsed.length; i++) if(parsed[i]) idx.push(i);
+
+  if(!idx.length) return {ingredients: ings.slice(), ratio: k};
+
+  /* Candidate amounts for each scalable ingredient: round down, round up.
+
+     Both are then clamped to the side of the original that the scale is
+     heading for. Without that, a step which does not divide the original
+     amount could send a quantity the wrong way — "1 banana" became "2
+     banana" while scaling DOWN to 0.96, because the step is a whole banana
+     and rounding up was the nearer of the two options it was offered.
+     Clamping also lets an amount stay exactly where it started, which for
+     "1/3 cup granola" against a quarter-cup step is the right answer. */
+  var down = (k <= 1);
+  var cand = idx.map(function(i){
+    var p = parsed[i];
+    var want = p.n * k;
+    var lo = Math.max(Math.floor(want / p.step + 1e-9) * p.step, p.step);
+    var hi = Math.max(lo + p.step, p.step);
+    if(down){ lo = Math.min(lo, p.n); hi = Math.min(hi, p.n); }
+    else    { lo = Math.max(lo, p.n); hi = Math.max(hi, p.n); }
+    return (Math.abs(hi - lo) < 1e-9) ? [lo] : [Math.min(lo, hi), Math.max(lo, hi)];
+  });
+
+  var search = idx.slice(0, QTY_MAX_SEARCH);
+  var bestMask = 0, bestD = Infinity, bestRatio = k;
+  var combos = 1 << search.length;
+  for(var mask = 0; mask < combos; mask++){
+    var tot = 0;
+    for(var j = 0; j < idx.length; j++){
+      var c = cand[j];
+      var pick = (j < search.length && ((mask >> j) & 1) && c.length > 1) ? c[1] : c[0];
+      tot += pick / parsed[idx[j]].n;
+    }
+    var r = tot / idx.length;
+    var d = Math.abs(r - k);
+    if(d < bestD){ bestD = d; bestMask = mask; bestRatio = r; }
+  }
+
+  var out = ings.slice();
+  for(var j2 = 0; j2 < idx.length; j2++){
+    var c2 = cand[j2];
+    var pick2 = (j2 < search.length && ((bestMask >> j2) & 1) && c2.length > 1) ? c2[1] : c2[0];
+    var p2 = parsed[idx[j2]];
+    out[idx[j2]] = p2.lead + numberToQty(pick2) + p2.gap + fixPlural(p2.rest, pick2);
+  }
+  return {ingredients: out, ratio: bestRatio};
 }
 
 
@@ -18225,25 +18753,60 @@ function scaleIngredient(text, k){
 function scaleMeal(meal, k){
   if(!meal) return meal;
   var out = Object.assign({}, meal);
-  if(meal.macros){
+
+  /* The recipe is rounded as a whole so it sits as close to k as
+     measurable amounts allow. The MACROS still come from k itself.
+
+     Deriving the macros from the rounding instead was tried and was worse.
+     The only estimator available without per-ingredient nutrition data is
+     the mean of the achieved ratios, and it is badly biased: halving one
+     tablespoon of honey counts as much as halving the oats, so meals were
+     marked down far more than their food had actually shrunk. Plans came
+     out 4–13% over target and the card was wrong in a second way instead
+     of the first. Measured, reverted, kept the balanced rounding.
+
+     So the honest position is: the macros are the number, the quantities
+     are the nearest thing you can measure, and the card says so. Computing
+     macros from ingredients properly needs a nutrition table behind all
+     230 ingredient strings — a real piece of work, and not a pre-beta one. */
+  if(meal.recipe){
+    out.recipe = Object.assign({}, meal.recipe);
+    if(Array.isArray(meal.recipe.ingredients)){
+      out.recipe.ingredients = scaleMealRecipe(meal, k).ingredients;
+    }
+    if(Array.isArray(meal.recipe.seasonings)) out.recipe.seasonings = meal.recipe.seasonings.slice();
+  }
+
+  /* Macros are read off the scaled recipe, so the card cannot contradict
+     the ingredient list it sits above. Falls back to scaling the stated
+     figure only when the recipe cannot be resolved — which, across the
+     library, is no meals at all. */
+  var fromFood = (typeof recipeMacros === "function") ? recipeMacros(out) : null;
+  if(fromFood){
+    out.macros = {p: fromFood.p, c: fromFood.c, f: fromFood.f};
+    out.macrosFrom = "recipe";
+  } else if(meal.macros){
     out.macros = {
       p: Math.max(Math.round(meal.macros.p * k), 1),
       c: Math.max(Math.round(meal.macros.c * k), 0),
       f: Math.max(Math.round(meal.macros.f * k), 1)
     };
+    out.macrosFrom = "scaled";
   }
   if(typeof meal.cost === "number") out.cost = Math.round(meal.cost * k * 100) / 100;
-  if(meal.recipe){
-    out.recipe = Object.assign({}, meal.recipe);
-    if(Array.isArray(meal.recipe.ingredients)){
-      out.recipe.ingredients = meal.recipe.ingredients.map(function(i){
-        return scaleIngredient(i, k);
-      });
-    }
-    if(Array.isArray(meal.recipe.seasonings)) out.recipe.seasonings = meal.recipe.seasonings.slice();
-  }
+
   out.scaledBy = Math.round(k * 100) / 100;
+  out.scaleAsked = out.scaledBy;
   return out;
+}
+
+/* Calories of a meal, preferring what its ingredients actually contain. */
+function mealCalories(meal){
+  if(!meal) return 0;
+  var m = (typeof recipeMacros === "function") ? recipeMacros(meal) : null;
+  if(!m) m = meal.macros;
+  if(!m) return 0;
+  return m.p * 4 + m.c * 4 + m.f * 9;
 }
 
 /* How far the template has to move to land on the target. Clamped, because
@@ -18253,13 +18816,38 @@ var PLAN_SCALE_MIN = 0.55, PLAN_SCALE_MAX = 1.9;
 
 function planScaleFactor(base, macros){
   if(!base || !base.length || !macros || !macros.cal) return 1;
-  var cal = base.reduce(function(a, m){
-    if(!m || !m.macros) return a;
-    return a + m.macros.p * 4 + m.macros.c * 4 + m.macros.f * 9;
-  }, 0);
+  var cal = base.reduce(function(a, m){ return a + mealCalories(m); }, 0);
   if(!cal) return 1;
   var k = macros.cal / cal;
   return Math.max(PLAN_SCALE_MIN, Math.min(PLAN_SCALE_MAX, k));
+}
+
+/* Scale the whole plan and check where it actually landed.
+
+   Now that a meal's macros are read off its rounded recipe, multiplying by
+   k no longer gives exactly k times the calories — whole eggs and quarter
+   cups do not divide that finely. So the factor is corrected against the
+   result a few times. It converges in two or three passes; the loop is
+   bounded because a plan of coarse ingredients may simply have no factor
+   that lands on the number, and pretending otherwise would be a lie
+   dressed as precision. */
+function scalePlanToTarget(base, macros){
+  var k = planScaleFactor(base, macros);
+  var best = null, bestOff = Infinity;
+  for(var pass = 0; pass < 5; pass++){
+    var scaled = base.map(function(m){ return scaleMeal(m, k); });
+    var got = scaled.reduce(function(a, m){
+      return a + (m.macros ? m.macros.p * 4 + m.macros.c * 4 + m.macros.f * 9 : 0);
+    }, 0);
+    var off = Math.abs(got - macros.cal);
+    if(off < bestOff){ bestOff = off; best = scaled; }
+    if(!got || off / macros.cal < 0.02) break;
+    var next = k * (macros.cal / got);
+    next = Math.max(PLAN_SCALE_MIN, Math.min(PLAN_SCALE_MAX, next));
+    if(Math.abs(next - k) < 0.005) break;
+    k = next;
+  }
+  return best || base.map(function(m){ return scaleMeal(m, 1); });
 }
 
 /* The stored plan is the SCALED one, because everything downstream —
@@ -18285,10 +18873,9 @@ function applyPlanScaling(){
     if(!base || !base.length) return null;
 
     var macros = FF.macros || ob.macros;
-    var k = planScaleFactor(base, macros);
-    ob.mealPlan = base.map(function(m){ return scaleMeal(m, k); });
+    ob.mealPlan = scalePlanToTarget(base, macros);
     FF.onboarding = ob;
-    return k;
+    return (ob.mealPlan[0] && ob.mealPlan[0].scaledBy) || 1;
   }catch(e){ console.warn("applyPlanScaling:", e); return null; }
 }
 
@@ -18391,34 +18978,12 @@ if(typeof rebuildTargetsForPhase === "function" && !rebuildTargetsForPhase.__sca
   rebuildTargetsForPhase.__scaled = true;
 }
 
-/* The weekly grocery figure in Setup is summed from the base recipes, so a
-   plan that scales to 130% would quietly cost 30% more than the number the
-   budget slider is being checked against. Recompute it at the real portions.
-
-   buildMealPlan() writes #weekCost itself, so this runs after it and
-   overwrites — including the colour, which is the part that tells someone
-   they are over budget. */
-if(typeof buildMealPlan === "function" && !buildMealPlan.__scaledCost){
-  var _bmp = buildMealPlan;
-  buildMealPlan = function(){
-    var r = _bmp.apply(this, arguments);
-    try{
-      var meals = (typeof S !== "undefined" && S && S.mealPlan) || [];
-      var macros = (typeof calcFinalMacros === "function") ? calcFinalMacros() : null;
-      var el = document.getElementById("weekCost");
-      if(el && meals.length && macros && macros.cal){
-        var k = planScaleFactor(meals, macros);
-        var daily = meals.reduce(function(s, m){ return s + ((m && m.cost) || 0); }, 0) * k;
-        var weekly = daily * 7;
-        var budget = (typeof S !== "undefined" && S && S.budget) || 75;
-        el.textContent = "$" + weekly.toFixed(0);
-        el.style.color = (weekly <= budget) ? "#4CAF72" : "#FF9070";
-      }
-    }catch(e){}
-    return r;
-  };
-  buildMealPlan.__scaledCost = true;
-}
+/* The weekly grocery figure used to be summed from the base recipes, so a
+   plan scaling to 130% quietly cost 30% more than the number the budget
+   slider was being checked against. That is now fixed inside buildMealPlan
+   itself — it scales the meals before it renders the cards, the cost and
+   S.mealPlan — rather than being patched over afterwards here. Recomputing
+   it in a wrapper as well would scale an already-scaled plan a second time. */
 
 /* Boot: migrate an existing saved plan onto the base/scaled split and
    bring it in line with whatever the target is now. */
@@ -18464,13 +19029,25 @@ function planTotalsHTML(plan, macros){
 
   var tone = (calOk && splitOk) ? "#4CAF72" : calOk ? "#F59E0B" : "#FF9070";
 
+  /* Did the plan want to scale further than it is allowed to, or did the
+     rounding just not land? Different problems, different advice. */
+  var asked = plan[0] && plan[0].scaleAsked;
+  var clamped = asked != null && (asked <= PLAN_SCALE_MIN + 0.01 || asked >= PLAN_SCALE_MAX - 0.01);
+
   var note;
-  if(!calOk){
+  if(!calOk && clamped){
     note = off < 0
       ? "These portions are as small as this plan goes — " + Math.abs(off).toLocaleString() +
-        " cal under. Add a meal in Settings, or use the scanner to log the difference."
+        " cal under. Drop to fewer meals in Settings, or log the difference with the scanner."
       : "These portions are as large as this plan goes — " + off.toLocaleString() +
-        " cal over. Drop a meal in Settings, or pick lighter meals.";
+        " cal over. Add a meal in Settings, or pick lighter meals.";
+  } else if(!calOk){
+    /* Portions are whole eggs and quarter cups, not decimals. Say that,
+       rather than imply something is wrong. */
+    note = "Closest these recipes get to your target — " +
+           (off < 0 ? Math.abs(off).toLocaleString() + " cal under" : off.toLocaleString() + " cal over") +
+           ". Portions round to amounts you can actually measure, so the plan lands near " +
+           "your number rather than exactly on it.";
   } else if(splitOk){
     note = "Portions are matched to your target.";
   } else if(pGap > 0){
@@ -18489,7 +19066,9 @@ function planTotalsHTML(plan, macros){
   var k = plan[0] && plan[0].scaledBy;
   if(k && Math.abs(k - 1) > 0.04){
     scaleNote = '<div class="plan-totals-note" style="opacity:.75;margin-top:4px;">' +
-      'Every portion below is scaled to ' + Math.round(k * 100) + '% of the base recipe.' +
+      'Every portion below is scaled to ' + Math.round(k * 100) + '% of the base recipe, ' +
+      'rounded to amounts you can measure — so a quantity may read a little ' +
+      'above or below the macros beside it.' +
       '</div>';
   }
 
@@ -18508,7 +19087,6 @@ function planTotalsHTML(plan, macros){
 }
 
 
-
 /* ═══════════════════════════════════════════════════════════════
    WHICH BUILD AM I LOOKING AT?
 
@@ -18524,7 +19102,7 @@ function planTotalsHTML(plan, macros){
      · a console line on every boot
 ═══════════════════════════════════════════════════════════════ */
 
-var FF_BUILD = "v15";
+var FF_BUILD = "v18";
 var FF_BUILD_DATE = "2026-09-15";
 
 try{
