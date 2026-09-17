@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="FormFuel"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:wght@400;500;600;700&family=Cormorant+SC:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 /* ── APP SCREENS (dashboard tabs) ── */
 .app-screens{
@@ -3777,8 +3777,8 @@ button.sum-card:hover{border-color:rgba(var(--rgb-ink),.18);}
   --gold-soft:#B4DFC8;
   --on-accent:#07291C;
 
-  --font-display:'Cormorant Garamond',Georgia,serif;
-  --font-display-alt:'Cormorant Garamond',Georgia,serif;
+  --font-display:'Cormorant SC','Cormorant Garamond',Georgia,serif;
+  --font-display-alt:'Cormorant SC','Cormorant Garamond',Georgia,serif;
   --font-body:'Jost',system-ui,sans-serif;
   --font-glyph:"FFGlagolitic",serif;
 }
@@ -3913,70 +3913,62 @@ button.sum-card:hover{border-color:rgba(var(--rgb-ink),.18);}
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ELVEN READS SMALLER THAN NORDIC — and it is not an illusion.
+   ELVEN TYPE
 
-   Nordic is Cinzel: an inscriptional capitals face with no true
-   lowercase at all. Its "lowercase" codepoints are small capitals, so
-   every letter fills most of the em box. That is why "Body Log" renders
-   as BODY LOG in Nordic without any text-transform in the CSS.
+   The size difference was real and it was the font, not the CSS. Nordic
+   is Cinzel: an inscriptional face with NO true lowercase, so every
+   letter fills most of the em box and "Body Log" renders as BODY LOG
+   without any text-transform. Elven was Cormorant Garamond, an ordinary
+   text serif with real lowercase and a famously small x-height — about
+   0.37em against Cinzel's ~0.50em small caps.
 
-   Elven is Cormorant Garamond: an old-style text serif with real
-   lowercase and a deliberately small x-height — roughly 0.37em against
-   Cinzel's ~0.5em small caps. Set at the same pixel size the two are not
-   the same size on the page, and Cormorant's thin strokes make the gap
-   read as even wider.
+   Elven now uses Cormorant SC: the same typeface drawn as small capitals.
+   Same voice as Cinzel, near enough the same cap height, and no CSS rules
+   needed — see build.py for the swap.
 
-   Two corrections, neither of which touches Nordic:
-     1. small capitals on the UI chrome, so buttons and labels keep the
-        inscriptional voice the whole app is built around
-     2. a size bump, because even as small caps Cormorant sits lower
+   Two earlier attempts did this with `font-variant-caps` and a size bump
+   on a list of selectors. Both failed, and it is worth writing down why:
 
-   Tuning: --elven-display-scale is the one number to change.
+     · `font-size: calc(1em * k)` COMPOUNDS. Any matched element sitting
+       inside another matched element multiplies twice. A class that is a
+       leaf on one screen is a container on the next, so no selector list
+       is safe. The nav bar came out at 2.4x.
+     · small-caps on a button hits everything inside it, including text
+       set in the BODY font. "Fight this week's boss" is lowercase in
+       Nordic because it is DM Sans, and the rule shouted it.
+
+   What is left here is only what the font genuinely needs.
 ═══════════════════════════════════════════════════════════════ */
 
-:root[data-theme="elven"]{
-  --elven-display-scale:1.14;
-}
-
-/* Chrome — the parts that were capitals in Nordic and should stay that
-   voice. Prose and meal names keep true lowercase; they are meant to
-   read as text, not as inscription. */
+/* Cormorant is a lighter face than Cinzel. At small letter-spaced label
+   sizes it needs the weight, or it fades into the background. */
 :root[data-theme="elven"] .s-title,
 :root[data-theme="elven"] .header-title,
+:root[data-theme="elven"] .screen-title,
+:root[data-theme="elven"] h1,
+:root[data-theme="elven"] h2{ font-weight:600;letter-spacing:.01em; }
+
+:root[data-theme="elven"] .section-label,
 :root[data-theme="elven"] .s-eyebrow,
 :root[data-theme="elven"] .header-eyebrow,
-:root[data-theme="elven"] .section-label,
 :root[data-theme="elven"] .ff-nav-label,
-:root[data-theme="elven"] .slider-label,
-:root[data-theme="elven"] .plan-totals-label,
-:root[data-theme="elven"] .c-btn,
-:root[data-theme="elven"] .char-btn,
-:root[data-theme="elven"] .theme-name,
-:root[data-theme="elven"] .guide-cta,
-:root[data-theme="elven"] .back-nav-title,
-:root[data-theme="elven"] button{
-  font-variant-caps:small-caps;
-  font-size:calc(1em * var(--elven-display-scale));
-}
+:root[data-theme="elven"] .st-text,
+:root[data-theme="elven"] .slider-label{ font-weight:600; }
 
-/* Headings carry the bump without small caps — a title in small capitals
-   at display size reads as shouting. */
-:root[data-theme="elven"] h1,
-:root[data-theme="elven"] h2,
-:root[data-theme="elven"] .home-name,
-:root[data-theme="elven"] .meal-name{
-  font-size:calc(1em * var(--elven-display-scale));
-}
-
-/* Numbers are lining figures in Cinzel and old-style in Cormorant, which
-   makes stat values look like they are falling off the baseline. */
+/* Cormorant's default figures are old-style, which makes a stat value look
+   like it is sliding off the baseline beside its label. */
 :root[data-theme="elven"] .md-val,
 :root[data-theme="elven"] .day-row-cal,
 :root[data-theme="elven"] .plan-totals-val,
-:root[data-theme="elven"] .stat-val,
-:root[data-theme="elven"] .cost-val{
+:root[data-theme="elven"] .cost-val,
+:root[data-theme="elven"] .hud-timer,
+:root[data-theme="elven"] .daily-total-val{
   font-variant-numeric:lining-nums tabular-nums;
 }
+
+/* The glyph field is Glagolitic here rather than futhark, and sits
+   optically smaller at the same size. */
+:root[data-theme="elven"] .sec-rune{ font-size:1.15em; }
 </style>
 </head>
 <body>
@@ -19102,7 +19094,7 @@ function planTotalsHTML(plan, macros){
      · a console line on every boot
 ═══════════════════════════════════════════════════════════════ */
 
-var FF_BUILD = "v18";
+var FF_BUILD = "v19";
 var FF_BUILD_DATE = "2026-09-15";
 
 try{
